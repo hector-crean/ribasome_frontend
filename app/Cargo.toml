@@ -11,12 +11,13 @@ bevy_mod_picking = { git = "https://github.com/bardt/bevy_mod_picking", branch =
 bevy_eventlistener = { git = "https://github.com/aevyrie/bevy_eventlistener.git", rev = "4d8de4c" }
 bevy_mod_billboard = { git = "https://github.com/kulkalkul/bevy_mod_billboard", rev = "deab993339801252936218ca0169fac63b42bb9d" }
 bevy_asset_loader = "0.17.0"
+bevy_egui = "0.21"
 
 #internal
 bevy_drag = { path = "../plugins/bevy_drag" }
 bevy_cameras = { path = "../plugins/bevy_cameras" }
 
-ribasome_models = { git = "https://github.com/hector-crean/ribasome_models", branch="main" }
+ribasome_models = { git = "https://github.com/hector-crean/ribasome_models", branch = "main" }
 
 
 #errors

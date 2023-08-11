@@ -4,11 +4,8 @@ pub mod state;
 
 use bevy::{prelude::*, window::PresentMode};
 use bevy_asset_loader::prelude::*;
-
-
-
+use bevy_egui::EguiPlugin;
 use ribasome_models::marker_3d::Marker3d;
-
 
 const BILLBOARD_TEXT_SCALE: Vec3 = Vec3::splat(0.0085);
 
@@ -51,15 +48,18 @@ enum Tool {
 
 fn main() {
     App::new()
-        .add_plugins((DefaultPlugins.set(WindowPlugin {
-            primary_window: Some(Window {
-                resizable: true,
-                fit_canvas_to_parent: true,
-                present_mode: PresentMode::AutoNoVsync,
+        .add_plugins((
+            DefaultPlugins.set(WindowPlugin {
+                primary_window: Some(Window {
+                    resizable: true,
+                    fit_canvas_to_parent: true,
+                    present_mode: PresentMode::AutoNoVsync,
+                    ..default()
+                }),
                 ..default()
             }),
-            ..default()
-        }),))
+            EguiPlugin,
+        ))
         .add_state::<AppState>()
         .insert_resource(Tool::Labeller)
         .add_loading_state(LoadingState::new(AppState::Loading).continue_to_state(AppState::Menu))
@@ -76,16 +76,12 @@ fn setup(mut commands: Commands) {
 }
 
 mod canvas3d {
-    use bevy::{prelude::*};
+    use bevy::prelude::*;
     use bevy_cameras::pan_orbit_camera::{OrbitCameraController, OrbitCameraControllerPlugin};
     use bevy_drag::{RaycastPickCamera, Transformable, TransformablePlugin};
     use bevy_eventlistener::prelude::{Listener, On};
-    use bevy_mod_billboard::{
-        prelude::BillboardPlugin, BillboardTextBundle,
-    };
-    use bevy_mod_picking::{
-        prelude::{Down, Pointer, PointerButton, RaycastPickTarget},
-    };
+    use bevy_mod_billboard::{prelude::BillboardPlugin, BillboardTextBundle};
+    use bevy_mod_picking::prelude::{Down, Pointer, PointerButton, RaycastPickTarget};
 
     use crate::{state::camera::CameraModeImpl, FontAssets, GlbAssets};
 
