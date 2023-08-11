@@ -1,5 +1,5 @@
 use bevy::{prelude::*, render::camera::Camera};
-use std::fmt::Debug;
+
 
 pub trait CameraController: Component
 where
@@ -7,13 +7,13 @@ where
 {
     fn update_camera_transform_system(
         query: Query<(&Self, &mut Transform), (Changed<Self>, With<Camera>)>,
-    ) -> ();
+    );
 }
 
 pub trait CameraMode: Resource + Default + PartialEq + Eq {
     fn is_locked(&self) -> bool;
-    fn lock(&mut self) -> ();
-    fn unlock(&mut self) -> ();
+    fn lock(&mut self);
+    fn unlock(&mut self);
 }
 
 // We may have several cameras : how do we switch between active cameras?

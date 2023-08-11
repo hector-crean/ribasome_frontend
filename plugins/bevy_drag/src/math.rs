@@ -15,9 +15,9 @@ pub fn world_position_view_plane_intersection_world(
 
     let ray_dir_view = compute_ray_direction_view(cursor_position_ndc, inverse_projection);
     let intersection_view = compute_intersection_view(p_view.z, ray_dir_view);
-    let intersection_world = view.transform_point3(intersection_view);
+    
 
-    intersection_world
+    view.transform_point3(intersection_view)
 }
 
 fn compute_cursor_position_ndc(cursor_position: Vec2, logical_viewport_size: Vec2) -> Vec2 {

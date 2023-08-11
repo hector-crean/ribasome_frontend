@@ -1,5 +1,6 @@
 pub mod controller;
 pub mod events;
+pub mod gizmo;
 pub mod math;
 pub mod normalize;
 pub mod picking;
@@ -20,9 +21,9 @@ pub struct TransformablePlugin<T: CameraMode>(pub T);
 impl<T: CameraMode + Send + Sync + 'static> Plugin for TransformablePlugin<T> {
     fn build(&self, app: &mut App) {
         app.add_plugins(
-            (DefaultPickingPlugins
+            DefaultPickingPlugins
                 .build()
-                .disable::<debug::DebugPickingPlugin>()),
+                .disable::<debug::DebugPickingPlugin>(),
         )
         .insert_resource::<TransformControllerSettings>(TransformControllerSettings::default())
         .insert_resource(T::default())
@@ -31,7 +32,7 @@ impl<T: CameraMode + Send + Sync + 'static> Plugin for TransformablePlugin<T> {
         .add_systems(PostStartup, Self::setup_raycast_camera)
         .add_systems(
             Update,
-            (Self::emit_transform_events.run_if(on_event::<EntityDragEvent>())),
+            Self::emit_transform_events.run_if(on_event::<EntityDragEvent>()),
         )
         .add_systems(
             PostUpdate,
@@ -42,7 +43,7 @@ impl<T: CameraMode + Send + Sync + 'static> Plugin for TransformablePlugin<T> {
 
 impl<T: CameraMode + Send + Sync + 'static> TransformablePlugin<T> {
     fn run_criteria(
-        camera_mode: Res<T>,
+        _camera_mode: Res<T>,
         controller_settings: Res<TransformControllerSettings>,
     ) -> bool {
         controller_settings.enabled
@@ -52,7 +53,7 @@ impl<T: CameraMode + Send + Sync + 'static> TransformablePlugin<T> {
         mut commands: Commands,
         camera_query: Query<Entity, (With<Camera>, With<Camera3d>)>,
     ) {
-        for (entity) in camera_query.iter() {
+        for entity in camera_query.iter() {
             commands.entity(entity).insert(RaycastPickCamera::default());
         }
     }
@@ -69,8 +70,8 @@ impl<T: CameraMode + Send + Sync + 'static> TransformablePlugin<T> {
             match event {
                 DragStart {
                     entity,
-                    pointer_id,
-                    pointer_position,
+                    pointer_id: _,
+                    pointer_position: _,
                     data,
                 } => {
                     camera_controller.lock();
@@ -87,14 +88,14 @@ impl<T: CameraMode + Send + Sync + 'static> TransformablePlugin<T> {
                 }
                 Dragging {
                     entity,
-                    pointer_id,
+                    pointer_id: _,
                     pointer_position,
-                    data,
+                    data: _,
                 } => match transformable_query.get(*entity) {
                     Ok(TransformableQueryReadOnlyItem {
                         entity,
                         controller,
-                        transform,
+                        transform: _,
                         ..
                     }) => {
                         let TransformController {
@@ -112,7 +113,7 @@ impl<T: CameraMode + Send + Sync + 'static> TransformablePlugin<T> {
                         let camera_affine3A = camera_transform.affine();
                         let view_mat4 = Mat4::from(camera_affine3A);
                         let inverse_view_mat4 = view_mat4.inverse();
-                        let proj_mat4 = Camera::projection_matrix(&camera);
+                        let proj_mat4 = Camera::projection_matrix(camera);
                         let inverse_proj_mat4: Mat4 = proj_mat4.inverse();
 
                         if let (
@@ -142,10 +143,10 @@ impl<T: CameraMode + Send + Sync + 'static> TransformablePlugin<T> {
                     }
                 },
                 DragEnd {
-                    entity,
-                    pointer_id,
-                    pointer_position,
-                    data,
+                    entity: _,
+                    pointer_id: _,
+                    pointer_position: _,
+                    data: _,
                 } => {
                     camera_controller.unlock();
                 }
@@ -164,11 +165,11 @@ impl<T: CameraMode + Send + Sync + 'static> TransformablePlugin<T> {
                         Ok(TransformableQueryItem { mut transform, .. }) => {
                             transform.translation = *translation;
                         }
-                        Err(err) => {}
+                        Err(_err) => {}
                     }
                 }
-                TransformEvent::Rotate((entity, rotation)) => {}
-                TransformEvent::Scale((entity, scale)) => {}
+                TransformEvent::Rotate((_entity, _rotation)) => {}
+                TransformEvent::Scale((_entity, _scale)) => {}
             }
         }
     }

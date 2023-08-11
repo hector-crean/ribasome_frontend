@@ -1,10 +1,19 @@
-use bevy::{prelude::*, render::camera::Camera};
+use bevy::{prelude::*, render::camera::Camera, transform::TransformSystem};
 
-use crate::picking::GizmoPickSource;
+use crate::{GizmoPickSource, GizmoSettings, TransformGizmoSystem};
 
 pub struct Ui3dNormalization;
 impl Plugin for Ui3dNormalization {
-    fn build(&self, _app: &mut App) {}
+    fn build(&self, app: &mut App) {
+        app.add_systems(
+            PostUpdate,
+            normalize
+                .in_set(TransformGizmoSystem::NormalizeSet)
+                .after(TransformSystem::TransformPropagate)
+                .after(TransformGizmoSystem::Place)
+                .run_if(|settings: Res<GizmoSettings>| settings.enabled),
+        );
+    }
 }
 
 /// Marker struct that marks entities with meshes that should be scaled relative to the camera.

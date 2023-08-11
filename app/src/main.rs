@@ -2,13 +2,13 @@ pub mod coordinate_system;
 pub mod errors;
 pub mod state;
 
-use bevy::{gltf::Gltf, prelude::*, window::PresentMode};
+use bevy::{prelude::*, window::PresentMode};
 use bevy_asset_loader::prelude::*;
-use bevy_cameras::pan_orbit_camera::{OrbitCameraController, OrbitCameraControllerPlugin};
-use bevy_drag::{Transformable, TransformablePlugin};
-use bevy_mod_billboard::prelude::*;
+
+
+
 use ribasome_models::marker_3d::Marker3d;
-use state::camera::CameraModeImpl;
+
 
 const BILLBOARD_TEXT_SCALE: Vec3 = Vec3::splat(0.0085);
 
@@ -76,17 +76,15 @@ fn setup(mut commands: Commands) {
 }
 
 mod canvas3d {
-    use bevy::{app::AppExit, ecs::system::Command, prelude::*};
+    use bevy::{prelude::*};
     use bevy_cameras::pan_orbit_camera::{OrbitCameraController, OrbitCameraControllerPlugin};
     use bevy_drag::{RaycastPickCamera, Transformable, TransformablePlugin};
     use bevy_eventlistener::prelude::{Listener, On};
     use bevy_mod_billboard::{
-        prelude::BillboardPlugin, BillboardTextBundle, BillboardTextureBundle,
+        prelude::BillboardPlugin, BillboardTextBundle,
     };
     use bevy_mod_picking::{
-        backend::HitData,
         prelude::{Down, Pointer, PointerButton, RaycastPickTarget},
-        PickableBundle,
     };
 
     use crate::{state::camera::CameraModeImpl, FontAssets, GlbAssets};
@@ -129,18 +127,18 @@ mod canvas3d {
         meshes_query: Query<Entity, (With<Handle<Mesh>>, Without<RaycastPickTarget>)>,
     ) {
         for entity in meshes_query.iter() {
-            commands.entity(entity).insert((Transformable::default()));
+            commands.entity(entity).insert(Transformable::default());
         }
     }
 
     fn canvas_3d_setup(
-        mut app_state: ResMut<NextState<AppState>>,
+        _app_state: ResMut<NextState<AppState>>,
         mut commands: Commands,
         mut meshes: ResMut<Assets<Mesh>>,
         mut materials: ResMut<Assets<StandardMaterial>>,
-        mut camera_2d_query: Query<Entity, (With<Camera2d>, With<Camera>)>,
+        camera_2d_query: Query<Entity, (With<Camera2d>, With<Camera>)>,
         glbs: Res<GlbAssets>,
-        fonts: Res<FontAssets>,
+        _fonts: Res<FontAssets>,
     ) {
         for camera_entity in &camera_2d_query {
             commands.entity(camera_entity).despawn_recursive();
@@ -203,8 +201,8 @@ mod canvas3d {
                         On::<Pointer<Down>>::run(
                             |pointerdown: Listener<Pointer<Down>>,
                              mut commands: Commands,
-                             mut meshes: ResMut<Assets<Mesh>>,
-                             mut materials: ResMut<Assets<StandardMaterial>>,
+                             _meshes: ResMut<Assets<Mesh>>,
+                             _materials: ResMut<Assets<StandardMaterial>>,
                              keys: Res<Input<KeyCode>>,
                              fonts: Res<FontAssets>| {
                                 let Down { button, hit } = pointerdown.event;
@@ -213,7 +211,7 @@ mod canvas3d {
                                     Some(position) => match button {
                                         PointerButton::Primary => {
                                             if keys.pressed(KeyCode::Space) {
-                                                let label = commands
+                                                let _label = commands
                                                     .spawn(BillboardTextBundle {
                                                         transform: Transform::from_translation(
                                                             position,
@@ -302,7 +300,7 @@ mod canvas3d {
         });
     }
 
-    fn canvas_3d(mut commands: Commands) {}
+    fn canvas_3d(_commands: Commands) {}
 }
 
 mod menu {
@@ -637,7 +635,7 @@ mod menu {
             });
     }
 
-    fn display_settings_menu_setup(mut commands: Commands, display_quality: Res<Tool>) {
+    fn display_settings_menu_setup(mut commands: Commands, _display_quality: Res<Tool>) {
         let button_style = Style {
             width: Val::Px(200.0),
             height: Val::Px(65.0),

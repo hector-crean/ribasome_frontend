@@ -1,6 +1,5 @@
-use crate::api::{CameraController, CameraMode, CameraRig};
+use crate::api::{CameraController, CameraMode};
 use bevy::{
-    ecs::schedule::ScheduleLabel,
     input::mouse::{
         MouseMotion,
         MouseScrollUnit::{Line, Pixel},
@@ -9,7 +8,7 @@ use bevy::{
     prelude::*,
     render::camera::Camera,
 };
-use std::{fmt::Debug, ops::RangeInclusive};
+use std::{ops::RangeInclusive};
 
 #[derive(Default)]
 pub struct OrbitCameraControllerPlugin<T: CameraMode>(pub T);
@@ -113,7 +112,7 @@ impl<T: CameraMode> OrbitCameraControllerPlugin<T> {
     }
 
     pub fn update_camera_transform_system(
-        mut query: Query<
+        query: Query<
             (&OrbitCameraController, &mut Transform),
             (Changed<OrbitCameraController>, With<Camera>),
         >,
