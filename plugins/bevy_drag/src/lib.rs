@@ -4,16 +4,17 @@ pub mod gizmo;
 pub mod math;
 pub mod normalize;
 pub mod picking;
+pub mod popover;
 
 use crate::{
     controller::{TransformController, TransformControllerSettings},
-    events::{EntityDragEvent, TransformEvent},
+    events::{EntityPointerEvent, TransformEvent},
     math::world_position_view_plane_intersection_world,
 };
 use bevy::{ecs::query::WorldQuery, prelude::*};
 use bevy_cameras::CameraMode;
 pub use bevy_mod_picking::prelude::RaycastPickCamera;
-use bevy_mod_picking::prelude::*;
+use bevy_mod_picking::{events::PointerCancel, prelude::*};
 
 #[derive(Default)]
 pub struct TransformablePlugin<T: CameraMode>(pub T);
@@ -27,12 +28,12 @@ impl<T: CameraMode + Send + Sync + 'static> Plugin for TransformablePlugin<T> {
         )
         .insert_resource::<TransformControllerSettings>(TransformControllerSettings::default())
         .insert_resource(T::default())
-        .add_event::<EntityDragEvent>()
+        .add_event::<EntityPointerEvent>()
         .add_event::<TransformEvent>()
         .add_systems(PostStartup, Self::setup_raycast_camera)
         .add_systems(
             Update,
-            Self::emit_transform_events.run_if(on_event::<EntityDragEvent>()),
+            Self::emit_transform_events.run_if(on_event::<EntityPointerEvent>()),
         )
         .add_systems(
             PostUpdate,
@@ -59,14 +60,14 @@ impl<T: CameraMode + Send + Sync + 'static> TransformablePlugin<T> {
     }
 
     fn emit_transform_events(
-        mut drags_rdr: EventReader<EntityDragEvent>,
+        mut drags_rdr: EventReader<EntityPointerEvent>,
         mut transformable_query: Query<TransformableQuery>,
         raycast_camera_query: Query<(&GlobalTransform, &Camera)>,
         mut transform_event_wtr: EventWriter<TransformEvent>,
         mut camera_controller: ResMut<T>,
     ) {
         for event in drags_rdr.iter() {
-            use EntityDragEvent::*;
+            use EntityPointerEvent::*;
             match event {
                 DragStart {
                     entity,
@@ -86,7 +87,7 @@ impl<T: CameraMode + Send + Sync + 'static> TransformablePlugin<T> {
                         controller.drag_start_pointer_position = data.hit.position;
                     }
                 }
-                Dragging {
+                Drag {
                     entity,
                     pointer_id: _,
                     pointer_position,
@@ -150,6 +151,7 @@ impl<T: CameraMode + Send + Sync + 'static> TransformablePlugin<T> {
                 } => {
                     camera_controller.unlock();
                 }
+                _ => {}
             }
         }
     }
@@ -180,7 +182,7 @@ pub struct Transformable {
     pickable_bundle: PickableBundle,
     raycast_target: RaycastPickTarget, // <- Needed for the raycast backend.
     transform_controller: TransformController,
-    dragging: On<Pointer<Drag>>,
+    drag: On<Pointer<Drag>>,
     dragstart: On<Pointer<DragStart>>,
     dragend: On<Pointer<DragEnd>>,
 }
@@ -192,9 +194,9 @@ impl Default for Transformable {
             pickable_bundle: PickableBundle::default(),
             raycast_target: RaycastPickTarget::default(),
             transform_controller: TransformController::default(),
-            dragging: On::<Pointer<Drag>>::send_event::<EntityDragEvent>(),
-            dragstart: On::<Pointer<DragStart>>::send_event::<EntityDragEvent>(),
-            dragend: On::<Pointer<DragEnd>>::send_event::<EntityDragEvent>(),
+            drag: On::<Pointer<Drag>>::send_event::<EntityPointerEvent>(),
+            dragstart: On::<Pointer<DragStart>>::send_event::<EntityPointerEvent>(),
+            dragend: On::<Pointer<DragEnd>>::send_event::<EntityPointerEvent>(),
         }
     }
 }
@@ -213,7 +215,7 @@ pub struct TransformableQuery {
     #[cfg(feature = "highlight")]
     pub highlight: &'static PickHighlight,
     _pickable: With<Pickable>,
-    _dragging: With<On<Pointer<Drag>>>,
+    _drag: With<On<Pointer<Drag>>>,
     _dragstart: With<On<Pointer<DragStart>>>,
     _dragend: With<On<Pointer<DragEnd>>>,
 }

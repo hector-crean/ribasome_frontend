@@ -1,10 +1,10 @@
 use bevy::prelude::*;
 use bevy_eventlistener::callbacks::ListenerInput;
-use bevy_mod_picking::prelude::*;
+use bevy_mod_picking::{events::PointerCancel, prelude::*};
 
 #[derive(Event, Debug)]
-pub enum EntityDragEvent {
-    Dragging {
+pub enum EntityPointerEvent {
+    Drag {
         entity: Entity,
         pointer_id: PointerId,
         pointer_position: Vec2,
@@ -22,11 +22,65 @@ pub enum EntityDragEvent {
         pointer_position: Vec2,
         data: DragEnd,
     },
+    DragOver {
+        entity: Entity,
+        pointer_id: PointerId,
+        pointer_position: Vec2,
+        data: DragOver,
+    },
+    DragLeave {
+        entity: Entity,
+        pointer_id: PointerId,
+        pointer_position: Vec2,
+        data: DragLeave,
+    },
+    Drop {
+        entity: Entity,
+        pointer_id: PointerId,
+        pointer_position: Vec2,
+        data: Drop,
+    },
+    Out {
+        entity: Entity,
+        pointer_id: PointerId,
+        pointer_position: Vec2,
+        data: Out,
+    },
+    Over {
+        entity: Entity,
+        pointer_id: PointerId,
+        pointer_position: Vec2,
+        data: Over,
+    },
+    Click {
+        entity: Entity,
+        pointer_id: PointerId,
+        pointer_position: Vec2,
+        data: Click,
+    },
+    Down {
+        entity: Entity,
+        pointer_id: PointerId,
+        pointer_position: Vec2,
+        data: Down,
+    },
+    Up {
+        entity: Entity,
+        pointer_id: PointerId,
+        pointer_position: Vec2,
+        data: Up,
+    },
+    Move {
+        entity: Entity,
+        pointer_id: PointerId,
+        pointer_position: Vec2,
+        data: Move,
+    },
 }
 
-impl From<ListenerInput<Pointer<Drag>>> for EntityDragEvent {
+impl From<ListenerInput<Pointer<Drag>>> for EntityPointerEvent {
     fn from(event: ListenerInput<Pointer<Drag>>) -> Self {
-        EntityDragEvent::Dragging {
+        EntityPointerEvent::Drag {
             entity: event.target,
             data: Drag {
                 button: event.button,
@@ -38,9 +92,9 @@ impl From<ListenerInput<Pointer<Drag>>> for EntityDragEvent {
         }
     }
 }
-impl From<ListenerInput<Pointer<DragStart>>> for EntityDragEvent {
+impl From<ListenerInput<Pointer<DragStart>>> for EntityPointerEvent {
     fn from(event: ListenerInput<Pointer<DragStart>>) -> Self {
-        EntityDragEvent::DragStart {
+        EntityPointerEvent::DragStart {
             entity: event.target,
             data: DragStart {
                 hit: event.hit,
@@ -51,13 +105,121 @@ impl From<ListenerInput<Pointer<DragStart>>> for EntityDragEvent {
         }
     }
 }
-impl From<ListenerInput<Pointer<DragEnd>>> for EntityDragEvent {
+impl From<ListenerInput<Pointer<DragEnd>>> for EntityPointerEvent {
     fn from(event: ListenerInput<Pointer<DragEnd>>) -> Self {
-        EntityDragEvent::DragEnd {
+        EntityPointerEvent::DragEnd {
             entity: event.target,
             data: DragEnd {
                 distance: event.distance,
                 button: event.button,
+            },
+            pointer_id: event.pointer_id,
+            pointer_position: event.pointer_location.position,
+        }
+    }
+}
+
+impl From<ListenerInput<Pointer<Over>>> for EntityPointerEvent {
+    fn from(event: ListenerInput<Pointer<Over>>) -> Self {
+        EntityPointerEvent::Over {
+            entity: event.target,
+            data: Over { hit: event.hit },
+            pointer_id: event.pointer_id,
+            pointer_position: event.pointer_location.position,
+        }
+    }
+}
+
+impl From<ListenerInput<Pointer<DragLeave>>> for EntityPointerEvent {
+    fn from(event: ListenerInput<Pointer<DragLeave>>) -> Self {
+        EntityPointerEvent::DragLeave {
+            entity: event.target,
+            data: DragLeave {
+                button: event.button,
+                dragged: event.target,
+                hit: event.hit,
+            },
+            pointer_id: event.pointer_id,
+            pointer_position: event.pointer_location.position,
+        }
+    }
+}
+
+impl From<ListenerInput<Pointer<Drop>>> for EntityPointerEvent {
+    fn from(event: ListenerInput<Pointer<Drop>>) -> Self {
+        EntityPointerEvent::Drop {
+            entity: event.target,
+            data: Drop {
+                button: event.button,
+                dropped: event.target,
+                hit: event.hit,
+            },
+            pointer_id: event.pointer_id,
+            pointer_position: event.pointer_location.position,
+        }
+    }
+}
+
+impl From<ListenerInput<Pointer<Out>>> for EntityPointerEvent {
+    fn from(event: ListenerInput<Pointer<Out>>) -> Self {
+        EntityPointerEvent::Out {
+            entity: event.target,
+            data: Out { hit: event.hit },
+            pointer_id: event.pointer_id,
+            pointer_position: event.pointer_location.position,
+        }
+    }
+}
+
+impl From<ListenerInput<Pointer<Click>>> for EntityPointerEvent {
+    fn from(event: ListenerInput<Pointer<Click>>) -> Self {
+        EntityPointerEvent::Click {
+            entity: event.target,
+            data: Click {
+                hit: event.hit,
+                button: event.button,
+            },
+            pointer_id: event.pointer_id,
+            pointer_position: event.pointer_location.position,
+        }
+    }
+}
+
+impl From<ListenerInput<Pointer<Down>>> for EntityPointerEvent {
+    fn from(event: ListenerInput<Pointer<Down>>) -> Self {
+        EntityPointerEvent::Down {
+            entity: event.target,
+            data: Down {
+                hit: event.hit,
+                button: event.button,
+            },
+            pointer_id: event.pointer_id,
+            pointer_position: event.pointer_location.position,
+        }
+    }
+}
+
+impl From<ListenerInput<Pointer<Up>>> for EntityPointerEvent {
+    fn from(event: ListenerInput<Pointer<Up>>) -> Self {
+        EntityPointerEvent::Up {
+            entity: event.target,
+            data: Up {
+                hit: event.hit,
+                button: event.button,
+            },
+            pointer_id: event.pointer_id,
+            pointer_position: event.pointer_location.position,
+        }
+    }
+}
+
+impl From<ListenerInput<Pointer<Move>>> for EntityPointerEvent {
+    fn from(event: ListenerInput<Pointer<Move>>) -> Self {
+        EntityPointerEvent::Move {
+            entity: event.target,
+            data: Move {
+                hit: event.hit,
+                delta: event.delta,
             },
             pointer_id: event.pointer_id,
             pointer_position: event.pointer_location.position,

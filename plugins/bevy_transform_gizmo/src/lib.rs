@@ -166,7 +166,7 @@ impl Default for TransformGizmoBundle {
 pub struct TransformGizmo {
     current_interaction: Option<TransformGizmoInteraction>,
     // Point in space where mouse-gizmo interaction started (on mouse down), used to compare how
-    // much total dragging has occurred without accumulating error across frames.
+    // much total Drag has occurred without accumulating error across frames.
     drag_start: Option<Vec3>,
     origin_drag_start: Option<Vec3>,
     // Initial transform of the gizmo
@@ -220,7 +220,7 @@ fn drag_gizmo(
     };
     // Gizmo handle should project mouse motion onto the axis of the handle. Perpendicular motion
     // should have no effect on the handle. We can do this by projecting the vector from the handle
-    // click point to mouse's current position, onto the axis of the direction we are dragging. See
+    // click point to mouse's current position, onto the axis of the direction we are Drag. See
     // the wiki article for details: https://en.wikipedia.org/wiki/Vector_projection
     let gizmo_transform = if let Ok((transform, &Interaction::Pressed)) = gizmo_query.get_single() {
         transform.to_owned()
@@ -328,7 +328,7 @@ fn drag_gizmo(
                     Some(drag_start) => *drag_start,
                     None => {
                         gizmo.drag_start = Some(cursor_vector);
-                        return; // We just started dragging, no transformation is needed yet, exit early.
+                        return; // We just started Drag, no transformation is needed yet, exit early.
                     }
                 };
                 let dot = drag_start.dot(cursor_vector);
@@ -427,7 +427,7 @@ fn grab_gizmo(
         for (mut gizmo, mut interaction, _transform) in gizmo_query.iter_mut() {
             if *interaction == Interaction::Hovered {
                 *interaction = Interaction::Pressed;
-                // Dragging has started, store the initial position of all selected meshes
+                // Drag has started, store the initial position of all selected meshes
                 for (selection, transform, entity, rotation_origin_offset) in
                     selected_items_query.iter()
                 {

@@ -1,14 +1,34 @@
-use std::collections::BTreeSet;
+use std::{collections::BTreeSet, default};
 
-use egui::{Align2, Key, NumExt as _};
+use bevy_egui::{
+    egui,
+    egui::{Align2, Key, NumExt as _},
+    EguiContext, EguiContexts, EguiPlugin,
+};
 
 use crate::command::UICommand;
 
-#[derive(Default)]
+use bevy::prelude::*;
+
+pub struct CommandPalettePlugin;
+
+impl Plugin for CommandPalettePlugin {
+    fn build(&self, app: &mut App) {
+        app.add_plugins(EguiPlugin)
+            .insert_resource(CommandPalette::default())
+            .add_systems(Startup, command_palette);
+    }
+}
+
+#[derive(Default, Resource)]
 pub struct CommandPalette {
     visible: bool,
     query: String,
     selected_alternative: usize,
+}
+
+fn command_palette(mut egui_ctx: EguiContexts, mut command_palette: ResMut<CommandPalette>) {
+    let ui_command = command_palette.show(egui_ctx.ctx_mut());
 }
 
 impl CommandPalette {
@@ -99,7 +119,7 @@ impl CommandPalette {
                 egui::Sense::click(),
             );
 
-            let response = response.on_hover_text(command.tooltip());
+            // let response = response.on_hover_text(command.tooltip());
 
             if response.clicked() {
                 selected_command = Some(command);
@@ -191,7 +211,7 @@ fn commands_that_match(query: &str) -> Vec<FuzzyMatch> {
     } else {
         let mut matches: Vec<_> = UICommand::iter()
             .filter_map(|command| {
-                let target_text = command.text();
+                let target_text = command.str();
                 sublime_fuzzy::best_match(query, target_text).map(|fuzzy_match| FuzzyMatch {
                     command,
                     score: fuzzy_match.score(),
@@ -210,7 +230,7 @@ fn format_match(
     font_id: &egui::FontId,
     default_text_color: egui::Color32,
 ) -> egui::WidgetText {
-    let target_text = m.command.text();
+    let target_text = m.command.str();
 
     if let Some(fm) = &m.fuzzy_match {
         let matched_indices: BTreeSet<_> = fm.matched_indices().collect();

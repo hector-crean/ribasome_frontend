@@ -1,8 +1,11 @@
 use bevy::prelude::*;
-use egui::{Key, KeyboardShortcut, Modifiers};
+use bevy_egui::{
+    egui,
+    egui::{Key, KeyboardShortcut, Modifiers},
+};
 
 use strum::{EnumMessage, IntoEnumIterator};
-use strum_macros::{Display, EnumIter, EnumMessage, EnumString, IntoStaticStr};
+// use strum_macros::{Display, EnumIter, EnumMessage, EnumString, IntoStaticStr};
 
 /// Interface for sending [`UICommand`] messages.
 pub trait UICommandSender {
@@ -17,7 +20,17 @@ pub trait UICommandSender {
 ///
 
 #[derive(
-    Display, EnumString, EnumIter, Clone, PartialEq, Eq, Debug, EnumMessage, IntoStaticStr,
+    Event,
+    strum_macros::Display,
+    strum_macros::EnumString,
+    strum_macros::EnumIter,
+    Clone,
+    PartialEq,
+    Eq,
+    Debug,
+    strum_macros::EnumMessage,
+    strum_macros::IntoStaticStr,
+    Copy,
 )]
 pub enum UICommand {
     // Listed in the order they show up in the command palette by default!
@@ -71,31 +84,6 @@ impl UICommand {
             UICommand::Open => Some(cmd(Key::O)),
             UICommand::ToggleCommandPalette => Some(cmd(Key::P)),
         }
-    }
-
-    /// Show this command as a menu-button.
-    ///
-    /// If clicked, enqueue the command.
-    pub fn menu_button_ui(
-        self,
-        ui: &mut egui::Ui,
-        command_sender: &impl UICommandSender,
-    ) -> egui::Response {
-        let button = self.menu_button(ui.ctx());
-        let response = ui.add(button).on_hover_text(self.tooltip());
-        if response.clicked() {
-            command_sender.send_ui(self);
-            ui.close_menu();
-        }
-        response
-    }
-
-    pub fn menu_button(self, egui_ctx: &egui::Context) -> egui::Button {
-        let mut button = egui::Button::new(self.text());
-        if let Some(shortcut) = self.kb_shortcut() {
-            button = button.shortcut_text(egui_ctx.format_shortcut(&shortcut));
-        }
-        button
     }
 
     /// Add e.g. " (Ctrl+F11)" as a suffix
