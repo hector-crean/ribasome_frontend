@@ -8,14 +8,20 @@ use bevy::{
     prelude::*,
     render::camera::Camera,
 };
-use std::{ops::RangeInclusive};
+use bevy_mod_picking::{
+    debug::DebugPickingPlugin, pointer::InputMove, prelude::PointerButton, DefaultPickingPlugins,
+};
+use std::ops::RangeInclusive;
 
 #[derive(Default)]
 pub struct OrbitCameraControllerPlugin<T: CameraMode>(pub T);
 
 impl<T: CameraMode + Send + Sync + 'static> Plugin for OrbitCameraControllerPlugin<T> {
     fn build(&self, app: &mut App) {
-        app.add_systems(First, Self::init_camera_state)
+        app.add_plugins((DefaultPickingPlugins
+            .build()
+            .disable::<DebugPickingPlugin>(),))
+            .add_systems(First, Self::init_camera_state)
             .add_event::<OrbitCameraControllerEvents>()
             .add_systems(
                 Update,
@@ -122,21 +128,21 @@ impl<T: CameraMode> OrbitCameraControllerPlugin<T> {
 
     pub fn emit_motion_events(
         mut events: EventWriter<OrbitCameraControllerEvents>,
-        mut mouse_motion_events: EventReader<MouseMotion>,
-        mouse_button_input: Res<Input<MouseButton>>,
+        mut pointer_motion_events: EventReader<InputMove>,
+        pointer_button_input: Res<Input<MouseButton>>,
         mut query: Query<&OrbitCameraController>,
     ) {
         let mut delta = Vec2::ZERO;
-        for event in mouse_motion_events.iter() {
+        for event in pointer_motion_events.iter() {
             delta += event.delta;
         }
         for camera in query.iter_mut() {
             if camera.enabled {
-                if mouse_button_input.pressed(camera.rotate_button) {
+                if pointer_button_input.pressed(camera.rotate_button) {
                     events.send(OrbitCameraControllerEvents::Orbit(delta))
                 }
 
-                if mouse_button_input.pressed(camera.pan_button) {
+                if pointer_button_input.pressed(camera.pan_button) {
                     events.send(OrbitCameraControllerEvents::Pan(delta))
                 }
             }
