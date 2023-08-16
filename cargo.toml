@@ -2,3 +2,4 @@
 resolver = "2"
 edition = "2021"
 members = ["app", "plugins/*", "crates/*"]
+exclude = ["plugins/bevy_mesh_painter"]

@@ -1,6 +1,8 @@
 pub mod coordinate_system;
 pub mod dock;
+pub mod drag_and_drop;
 pub mod errors;
+pub mod light_rig;
 pub mod marker_component;
 pub mod state;
 pub mod tooltip;
@@ -8,6 +10,7 @@ pub mod tooltip;
 use bevy::{prelude::*, window::PresentMode};
 use bevy_asset_loader::prelude::*;
 use bevy_cameras::pan_orbit_camera::OrbitCameraController;
+use bevy_cmd_palette_plugin::CommandPalettePlugin;
 use bevy_drag::RaycastPickCamera;
 use bevy_editor::EditorPlugin;
 use bevy_egui::{egui, EguiPlugin};
@@ -17,11 +20,12 @@ use bevy_mod_picking::{
     prelude::{DebugPickingPlugin, DefaultHighlightingPlugin},
     DefaultPickingPlugins,
 };
-use bevy_cmd_palette_plugin::CommandPalettePlugin;
 use dock::TabViewer;
+use drag_and_drop::{file_drag_and_drop, FileDragAndDropPlugin};
 use egui_dock::{DockArea, NodeIndex, Style, Tree};
 
 use bevy_marker_components::MainCamera;
+use light_rig::LightRigPlugin;
 use ribasome_models::marker_3d::Marker3d;
 const BILLBOARD_TEXT_SCALE: Vec3 = Vec3::splat(0.0085);
 
@@ -39,8 +43,8 @@ pub struct FontAssets {
 
 #[derive(AssetCollection, Resource)]
 pub struct GlbAssets {
-    #[asset(path = "glb/mind_flayer__illithid.glb#Scene0")]
-    pub mind_flayer_illithid: Handle<Scene>,
+    #[asset(path = "glb/AF-Q8W3K0-F1.glb#Scene0")]
+    pub AF_Q8W3K0_F1: Handle<Scene>,
 }
 
 const TEXT_COLOR: Color = Color::rgb(0.9, 0.9, 0.9);
@@ -98,14 +102,19 @@ impl Plugin for AppPlugin {
             EguiPlugin,
             OutlinePlugin,
             // EditorPlugin,
-            CommandPalettePlugin
+            CommandPalettePlugin,
+            FileDragAndDropPlugin,
+            LightRigPlugin,
         ))
         .add_state::<AppState>()
         .insert_resource(Tool::Labeller)
-        .add_loading_state(LoadingState::new(AppState::Loading).continue_to_state(AppState::Canvas3d))
+        .add_loading_state(
+            LoadingState::new(AppState::Loading).continue_to_state(AppState::Canvas3d),
+        )
         .add_collection_to_loading_state::<AppState, FontAssets>(AppState::Loading)
         .add_collection_to_loading_state::<AppState, GlbAssets>(AppState::Loading)
         .add_systems(Startup, Self::setup)
+        .add_systems(Update, file_drag_and_drop)
         // Adds the plugins for each state
         .add_plugins((canvas3d::Canvas3dPlugin));
     }
@@ -292,19 +301,6 @@ mod canvas3d {
                     ));
                 }
             });
-
-        commands.spawn((
-            OnCanvas3dScreen,
-            PointLightBundle {
-                point_light: PointLight {
-                    intensity: 1500.0,
-                    shadows_enabled: true,
-                    ..Default::default()
-                },
-                transform: Transform::from_xyz(4.0, 8.0, 4.0),
-                ..Default::default()
-            },
-        ));
     }
 
     fn setup_labels(mut commands: Commands, fonts: Res<FontAssets>) {

@@ -73,7 +73,7 @@ impl Default for OrbitCameraController {
             center: Vec3::ZERO,
             rotate_sensitivity: 0.2,
             pan_sensitivity: 0.2,
-            zoom_sensitivity: 0.02,
+            zoom_sensitivity: 0.2,
             rotate_button: MouseButton::Left,
             pan_button: MouseButton::Right,
             enabled: true,
