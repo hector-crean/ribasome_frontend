@@ -40,9 +40,6 @@ pub enum UICommand {
     #[strum(serialize = "save")]
     #[strum(message = "Save")]
     Save,
-    #[strum(serialize = "toggle_command_palette")]
-    #[strum(message = "Toggle Command Palette")]
-    ToggleCommandPalette,
 }
 
 impl UICommand {
@@ -50,14 +47,12 @@ impl UICommand {
         match &self {
             UICommand::Open => self.get_message(),
             UICommand::Save => self.get_message(),
-            UICommand::ToggleCommandPalette => self.get_message(),
         }
     }
     pub fn str(&self) -> &'static str {
         match &self {
             UICommand::Open => self.into(),
             UICommand::Save => self.into(),
-            UICommand::ToggleCommandPalette => self.into(),
         }
     }
 
@@ -82,7 +77,6 @@ impl UICommand {
         match self {
             UICommand::Save => Some(cmd(Key::S)),
             UICommand::Open => Some(cmd(Key::O)),
-            UICommand::ToggleCommandPalette => Some(cmd(Key::P)),
         }
     }
 
@@ -92,6 +86,17 @@ impl UICommand {
             format!(" ({})", egui_ctx.format_shortcut(&kb_shortcut))
         } else {
             Default::default()
+        }
+    }
+
+    pub fn execute_command(&self) {
+        match self {
+            UICommand::Open => {
+                // Implement the OpenFile functionality
+            }
+            UICommand::Save => {
+                // Implement the SaveFile functionality
+            }
         }
     }
 }

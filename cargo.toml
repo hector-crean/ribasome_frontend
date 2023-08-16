@@ -1,4 +1,4 @@
 [workspace]
 resolver = "2"
 edition = "2021"
-members = ["app", "plugins/*"]
+members = ["app", "plugins/*", "crates/*"]

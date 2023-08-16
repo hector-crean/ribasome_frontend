@@ -22,12 +22,14 @@ bevy_asset_loader = "0.17.0"
 bevy_egui = "0.21"
 bevy-inspector-egui = "0.19.0"
 egui_dock = "0.6.3"
-
+bevy_mod_outline = "0.5"
 #internal
+bevy_marker_components = {path = "../crates/bevy_marker_components"}
+bevy_editor = { path = "../plugins/bevy_editor"}
 bevy_drag = { path = "../plugins/bevy_drag" }
 bevy_cameras = { path = "../plugins/bevy_cameras" }
 ribasome_models = { git = "https://github.com/hector-crean/ribasome_models", branch = "main" }
-
+bevy_cmd_palette_plugin = { path = "../plugins/bevy_cmd_palette_plugin"}
 #errors
 thiserror = "1.0.38"
 color-eyre = "0.6.2"

@@ -1,5 +1,5 @@
 [package]
-name = "ribasome_ui_plugin"
+name = "bevy_cmd_palette_plugin"
 version = "0.1.0"
 edition = "2021"
 

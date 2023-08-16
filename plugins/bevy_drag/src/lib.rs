@@ -16,29 +16,25 @@ use bevy_cameras::CameraMode;
 pub use bevy_mod_picking::prelude::RaycastPickCamera;
 use bevy_mod_picking::{events::PointerCancel, prelude::*};
 
+///This plugin requires the bevy_mod_picking plugin
 #[derive(Default)]
 pub struct TransformablePlugin<T: CameraMode>(pub T);
 
 impl<T: CameraMode + Send + Sync + 'static> Plugin for TransformablePlugin<T> {
     fn build(&self, app: &mut App) {
-        app.add_plugins(
-            DefaultPickingPlugins
-                .build()
-                .disable::<debug::DebugPickingPlugin>(),
-        )
-        .insert_resource::<TransformControllerSettings>(TransformControllerSettings::default())
-        .insert_resource(T::default())
-        .add_event::<EntityPointerEvent>()
-        .add_event::<TransformEvent>()
-        .add_systems(PostStartup, Self::setup_raycast_camera)
-        .add_systems(
-            Update,
-            Self::emit_transform_events.run_if(on_event::<EntityPointerEvent>()),
-        )
-        .add_systems(
-            PostUpdate,
-            Self::consume_transform_events.run_if(Self::run_criteria),
-        );
+        app.insert_resource::<TransformControllerSettings>(TransformControllerSettings::default())
+            .insert_resource(T::default())
+            .add_event::<EntityPointerEvent>()
+            .add_event::<TransformEvent>()
+            .add_systems(PostStartup, Self::setup_raycast_camera)
+            .add_systems(
+                Update,
+                Self::emit_transform_events.run_if(on_event::<EntityPointerEvent>()),
+            )
+            .add_systems(
+                PostUpdate,
+                Self::consume_transform_events.run_if(Self::run_criteria),
+            );
     }
 }
 

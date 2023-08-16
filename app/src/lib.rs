@@ -9,11 +9,19 @@ use bevy::{prelude::*, window::PresentMode};
 use bevy_asset_loader::prelude::*;
 use bevy_cameras::pan_orbit_camera::OrbitCameraController;
 use bevy_drag::RaycastPickCamera;
+use bevy_editor::EditorPlugin;
 use bevy_egui::{egui, EguiPlugin};
 use bevy_inspector_egui::quick::WorldInspectorPlugin;
+use bevy_mod_outline::*;
+use bevy_mod_picking::{
+    prelude::{DebugPickingPlugin, DefaultHighlightingPlugin},
+    DefaultPickingPlugins,
+};
+use bevy_cmd_palette_plugin::CommandPalettePlugin;
 use dock::TabViewer;
 use egui_dock::{DockArea, NodeIndex, Style, Tree};
-use marker_component::MainCamera;
+
+use bevy_marker_components::MainCamera;
 use ribasome_models::marker_3d::Marker3d;
 const BILLBOARD_TEXT_SCALE: Vec3 = Vec3::splat(0.0085);
 
@@ -84,16 +92,22 @@ impl Plugin for AppPlugin {
                 }),
                 ..default()
             }),
+            DefaultPickingPlugins
+                .build()
+                .disable::<DebugPickingPlugin>(),
             EguiPlugin,
+            OutlinePlugin,
+            // EditorPlugin,
+            CommandPalettePlugin
         ))
         .add_state::<AppState>()
         .insert_resource(Tool::Labeller)
-        .add_loading_state(LoadingState::new(AppState::Loading).continue_to_state(AppState::Menu))
+        .add_loading_state(LoadingState::new(AppState::Loading).continue_to_state(AppState::Canvas3d))
         .add_collection_to_loading_state::<AppState, FontAssets>(AppState::Loading)
         .add_collection_to_loading_state::<AppState, GlbAssets>(AppState::Loading)
         .add_systems(Startup, Self::setup)
         // Adds the plugins for each state
-        .add_plugins((menu::MenuPlugin, canvas3d::Canvas3dPlugin));
+        .add_plugins((canvas3d::Canvas3dPlugin));
     }
 }
 
@@ -113,6 +127,7 @@ mod canvas3d {
     use bevy_drag::{RaycastPickCamera, Transformable, TransformablePlugin};
     use bevy_eventlistener::prelude::{Listener, On};
     use bevy_mod_billboard::{prelude::BillboardPlugin, BillboardTextBundle};
+    use bevy_mod_outline::{OutlineBundle, OutlineStencil, OutlineVolume};
     use bevy_mod_picking::prelude::{Down, Pointer, PointerButton, RaycastPickTarget};
 
     use crate::{state::camera::CameraModeImpl, FontAssets, GlbAssets};
@@ -164,20 +179,18 @@ mod canvas3d {
         glbs: Res<GlbAssets>,
         _fonts: Res<FontAssets>,
     ) {
-        commands
-            // When any of this entity's children are interacted with using a pointer, those events will
-            // propagate up the entity hierarchy until they reach this parent. By referring to the
-            // `target` entity instead of the `listener` entity, we can do things to specific target
-            // entities, even though they lack `OnPointer` components.
-            .spawn((
-                OnCanvas3dScreen,
-                Transformable::default(),
-                SceneBundle {
-                    scene: glbs.mind_flayer_illithid.clone(),
-                    transform: Transform::from_xyz(8., 2.0, -5.0),
-                    ..Default::default()
-                },
-            ));
+        let outline = OutlineBundle {
+            outline: OutlineVolume {
+                visible: true,
+                colour: Color::WHITE,
+                width: 10.0,
+            },
+            stencil: OutlineStencil {
+                offset: 5.0,
+                ..default()
+            },
+            ..default()
+        };
 
         commands
             // When any of this entity's children are interacted with using a pointer, those events will
@@ -193,6 +206,18 @@ mod canvas3d {
                 },
                 Transformable::default(),
                 OnCanvas3dScreen,
+                OutlineBundle {
+                    outline: OutlineVolume {
+                        visible: true,
+                        colour: Color::WHITE,
+                        width: 5.0,
+                    },
+                    stencil: OutlineStencil {
+                        offset: 2.0,
+                        ..default()
+                    },
+                    ..default()
+                },
             ))
             .with_children(|parent| {
                 for i in 1..=5 {

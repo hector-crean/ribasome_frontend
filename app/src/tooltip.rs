@@ -1,5 +1,5 @@
-use crate::marker_component::MainCamera;
 use bevy::{prelude::*, ui::ContentSize};
+use bevy_marker_components::MainCamera;
 
 #[derive(Component)]
 pub struct ProjectedTextFrom3Dto2D;

@@ -1,4 +1,8 @@
-use bevy::prelude::*;
+use bevy::{prelude::*, window::PresentMode};
+use bevy_mod_picking::{
+    prelude::{DebugPickingPlugin, DefaultHighlightingPlugin},
+    DefaultPickingPlugins,
+};
 use bevy_ui_widgets::widget::tooltip::*;
 
 use bevy_cameras::{
@@ -10,7 +14,18 @@ use bevy_cameras::{
 fn main() {
     App::new()
         .add_plugins((
-            DefaultPlugins,
+            DefaultPlugins.set(WindowPlugin {
+                primary_window: Some(Window {
+                    resizable: true,
+                    fit_canvas_to_parent: true,
+                    present_mode: PresentMode::AutoNoVsync,
+                    ..default()
+                }),
+                ..default()
+            }),
+            DefaultPickingPlugins
+                .build()
+                .disable::<DebugPickingPlugin>(),
             OrbitCameraControllerPlugin::<CameraModeImpl>::default(),
         ))
         .add_plugins(TooltipPlugin)

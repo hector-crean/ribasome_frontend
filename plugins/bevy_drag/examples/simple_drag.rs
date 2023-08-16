@@ -121,7 +121,18 @@ impl CameraMode for CameraModeImpl {
 fn main() {
     App::new()
         .add_plugins((
-            DefaultPlugins,
+            DefaultPlugins.set(WindowPlugin {
+                primary_window: Some(Window {
+                    resizable: true,
+                    fit_canvas_to_parent: true,
+                    present_mode: PresentMode::AutoNoVsync,
+                    ..default()
+                }),
+                ..default()
+            }),
+            DefaultPickingPlugins
+                .build()
+                .disable::<DebugPickingPlugin>(),
             TransformablePlugin::<CameraModeImpl>::default(),
             OrbitCameraControllerPlugin::<CameraModeImpl>::default(),
         ))

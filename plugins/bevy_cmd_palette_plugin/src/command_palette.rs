@@ -14,21 +14,66 @@ pub struct CommandPalettePlugin;
 
 impl Plugin for CommandPalettePlugin {
     fn build(&self, app: &mut App) {
-        app.add_plugins(EguiPlugin)
-            .insert_resource(CommandPalette::default())
-            .add_systems(Startup, command_palette);
+        app.insert_resource(CommandPalette::default())
+            .add_event::<UICommand>()
+            .add_systems(
+                Update,
+                (toggle_cmd_palette, cmd_emitter, cmd_consumer).chain(),
+            );
     }
 }
 
-#[derive(Default, Resource)]
+#[derive(Resource)]
 pub struct CommandPalette {
     visible: bool,
     query: String,
     selected_alternative: usize,
 }
+impl Default for CommandPalette {
+    fn default() -> Self {
+        Self {
+            visible: false,
+            query: "".to_string(),
+            selected_alternative: 0,
+        }
+    }
+}
 
-fn command_palette(mut egui_ctx: EguiContexts, mut command_palette: ResMut<CommandPalette>) {
-    let ui_command = command_palette.show(egui_ctx.ctx_mut());
+fn toggle_cmd_palette(kbd_input: Res<Input<KeyCode>>, mut command_palette: ResMut<CommandPalette>) {
+    let shift = kbd_input.any_pressed([KeyCode::ShiftLeft, KeyCode::ShiftRight]);
+    let ctrl = kbd_input.any_pressed([KeyCode::ControlLeft, KeyCode::ControlRight]);
+    let meta = kbd_input.any_pressed([KeyCode::SuperLeft, KeyCode::SuperRight]);
+
+    if (ctrl || shift || meta) && kbd_input.just_pressed(KeyCode::P) {
+        command_palette.toggle()
+    }
+}
+
+fn cmd_emitter(
+    mut egui_ctx: EguiContexts,
+    mut command_palette: ResMut<CommandPalette>,
+    mut cmd_writer: EventWriter<UICommand>,
+) {
+    let cmd: Option<UICommand> = command_palette.run(egui_ctx.ctx_mut());
+
+    match cmd {
+        Some(cmd) => {
+            cmd_writer.send(cmd);
+        }
+        None => {}
+    }
+}
+
+fn cmd_consumer(
+    mut cmd_event: EventReader<UICommand>,
+    mut command_palette: ResMut<CommandPalette>,
+) {
+    for cmd in cmd_event.iter() {
+        match cmd {
+            UICommand::Open => info!("Cmd: Open"),
+            UICommand::Save => info!("Cmd: Save"),
+        }
+    }
 }
 
 impl CommandPalette {
@@ -38,7 +83,7 @@ impl CommandPalette {
 
     /// Show the command palette, if it is visible.
     #[must_use = "Returns the command that was selected"]
-    pub fn show(&mut self, egui_ctx: &egui::Context) -> Option<UICommand> {
+    pub fn run(&mut self, egui_ctx: &egui::Context) -> Option<UICommand> {
         self.visible &= !egui_ctx.input_mut(|i| i.consume_key(Default::default(), Key::Escape));
         if !self.visible {
             self.query.clear();
@@ -49,17 +94,19 @@ impl CommandPalette {
         let width = 300.0;
         let max_height = 320.0.at_most(screen_rect.height());
 
-        egui::Window::new("Command Palette")
+        let cmd = egui::Window::new("Command Palette")
             .title_bar(false)
             .fixed_size([width, max_height])
             .pivot(egui::Align2::CENTER_TOP)
             .fixed_pos(screen_rect.center() - 0.5 * max_height * egui::Vec2::Y)
-            .show(egui_ctx, |ui| self.window_content_ui(ui))?
-            .inner?
+            .show(egui_ctx, |ui| self.select_command_ui(ui))?
+            .inner?;
+
+        cmd
     }
 
     #[must_use = "Returns the command that was selected"]
-    fn window_content_ui(&mut self, ui: &mut egui::Ui) -> Option<UICommand> {
+    fn select_command_ui(&mut self, ui: &mut egui::Ui) -> Option<UICommand> {
         // Check _before_ we add the `TextEdit`, so it doesn't steal it.
         let enter_pressed = ui.input_mut(|i| i.consume_key(Default::default(), Key::Enter));
 

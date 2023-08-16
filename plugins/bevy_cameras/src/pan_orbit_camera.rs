@@ -18,10 +18,7 @@ pub struct OrbitCameraControllerPlugin<T: CameraMode>(pub T);
 
 impl<T: CameraMode + Send + Sync + 'static> Plugin for OrbitCameraControllerPlugin<T> {
     fn build(&self, app: &mut App) {
-        app.add_plugins((DefaultPickingPlugins
-            .build()
-            .disable::<DebugPickingPlugin>(),))
-            .add_systems(First, Self::init_camera_state)
+        app.add_systems(First, Self::init_camera_state)
             .add_event::<OrbitCameraControllerEvents>()
             .add_systems(
                 Update,
