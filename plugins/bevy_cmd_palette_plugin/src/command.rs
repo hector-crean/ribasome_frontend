@@ -7,9 +7,9 @@ use bevy_egui::{
 use strum::{EnumMessage, IntoEnumIterator};
 // use strum_macros::{Display, EnumIter, EnumMessage, EnumString, IntoStaticStr};
 
-/// Interface for sending [`UICommand`] messages.
-pub trait UICommandSender {
-    fn send_ui(&self, command: UICommand);
+/// Interface for sending [`CommandMsg`] messages.
+pub trait CommandMsgSender {
+    fn send_ui(&self, command: CommandMsg);
 }
 
 /// All the commands we support.
@@ -32,28 +32,31 @@ pub trait UICommandSender {
     strum_macros::IntoStaticStr,
     Copy,
 )]
-pub enum UICommand {
+pub enum CommandMsg {
     // Listed in the order they show up in the command palette by default!
-    #[strum(serialize = "open")]
-    #[strum(message = "Open")]
-    Open,
-    #[strum(serialize = "save")]
-    #[strum(message = "Save")]
-    Save,
+    #[strum(serialize = "transform_tool")]
+    #[strum(message = "Transform")]
+    TransformTool,
+    #[strum(serialize = "edit")]
+    #[strum(message = "Edit")]
+    EditTool,
+    #[strum(serialize = "add")]
+    #[strum(message = "Add")]
+    AddTool,
+    #[strum(serialize = "vetex_paint")]
+    #[strum(message = "Vertex Paint")]
+    VertexPaintTool,
+    #[strum(serialize = "texture_paint")]
+    #[strum(message = "Texture Paint")]
+    TexturePaintTool,
 }
 
-impl UICommand {
+impl CommandMsg {
     pub fn desc(self) -> Option<&'static str> {
-        match &self {
-            UICommand::Open => self.get_message(),
-            UICommand::Save => self.get_message(),
-        }
+        self.get_message()
     }
     pub fn str(&self) -> &'static str {
-        match &self {
-            UICommand::Open => self.into(),
-            UICommand::Save => self.into(),
-        }
+        self.into()
     }
 
     #[allow(clippy::unnecessary_wraps)] // Only on some platforms
@@ -75,8 +78,11 @@ impl UICommand {
         }
 
         match self {
-            UICommand::Save => Some(cmd(Key::S)),
-            UICommand::Open => Some(cmd(Key::O)),
+            CommandMsg::TransformTool => Some(cmd(Key::T)),
+            CommandMsg::EditTool => Some(cmd(Key::E)),
+            CommandMsg::AddTool => Some(cmd(Key::A)),
+            CommandMsg::VertexPaintTool => Some(cmd(Key::V)),
+            CommandMsg::TexturePaintTool => Some(cmd(Key::W)),
         }
     }
 
@@ -86,17 +92,6 @@ impl UICommand {
             format!(" ({})", egui_ctx.format_shortcut(&kb_shortcut))
         } else {
             Default::default()
-        }
-    }
-
-    pub fn execute_command(&self) {
-        match self {
-            UICommand::Open => {
-                // Implement the OpenFile functionality
-            }
-            UICommand::Save => {
-                // Implement the SaveFile functionality
-            }
         }
     }
 }
@@ -122,9 +117,9 @@ fn check_for_clashing_command_shortcuts() {
 
     use strum::IntoEnumIterator as _;
 
-    for a_cmd in UICommand::iter() {
+    for a_cmd in CommandMsg::iter() {
         if let Some(a_shortcut) = a_cmd.kb_shortcut() {
-            for b_cmd in UICommand::iter() {
+            for b_cmd in CommandMsg::iter() {
                 if a_cmd == b_cmd {
                     continue;
                 }

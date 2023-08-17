@@ -23,10 +23,11 @@ use bevy_mod_picking::{
 use dock::TabViewer;
 use drag_and_drop::{file_drag_and_drop, FileDragAndDropPlugin};
 use egui_dock::{DockArea, NodeIndex, Style, Tree};
+use ribasome_state::tool::ToolState;
 
-use bevy_marker_components::MainCamera;
 use light_rig::LightRigPlugin;
 use ribasome_models::marker_3d::Marker3d;
+use ribasome_state::marker::MainCamera;
 const BILLBOARD_TEXT_SCALE: Vec3 = Vec3::splat(0.0085);
 
 #[derive(AssetCollection, Resource)]
@@ -107,6 +108,7 @@ impl Plugin for AppPlugin {
             LightRigPlugin,
         ))
         .add_state::<AppState>()
+        .add_state::<ToolState>()
         .insert_resource(Tool::Labeller)
         .add_loading_state(
             LoadingState::new(AppState::Loading).continue_to_state(AppState::Canvas3d),

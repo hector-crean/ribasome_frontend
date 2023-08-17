@@ -1,3 +1,4 @@
+use ribasome_state::tool::ToolState;
 use std::{collections::BTreeSet, default};
 
 use bevy_egui::{
@@ -6,7 +7,7 @@ use bevy_egui::{
     EguiContext, EguiContexts, EguiPlugin,
 };
 
-use crate::command::UICommand;
+use crate::command::CommandMsg;
 
 use bevy::prelude::*;
 
@@ -15,7 +16,7 @@ pub struct CommandPalettePlugin;
 impl Plugin for CommandPalettePlugin {
     fn build(&self, app: &mut App) {
         app.insert_resource(CommandPalette::default())
-            .add_event::<UICommand>()
+            .add_event::<CommandMsg>()
             .add_systems(
                 Update,
                 (toggle_cmd_palette, cmd_emitter, cmd_consumer).chain(),
@@ -52,9 +53,9 @@ fn toggle_cmd_palette(kbd_input: Res<Input<KeyCode>>, mut command_palette: ResMu
 fn cmd_emitter(
     mut egui_ctx: EguiContexts,
     mut command_palette: ResMut<CommandPalette>,
-    mut cmd_writer: EventWriter<UICommand>,
+    mut cmd_writer: EventWriter<CommandMsg>,
 ) {
-    let cmd: Option<UICommand> = command_palette.run(egui_ctx.ctx_mut());
+    let cmd: Option<CommandMsg> = command_palette.run(egui_ctx.ctx_mut());
 
     match cmd {
         Some(cmd) => {
@@ -65,13 +66,17 @@ fn cmd_emitter(
 }
 
 fn cmd_consumer(
-    mut cmd_event: EventReader<UICommand>,
+    mut cmd_event: EventReader<CommandMsg>,
     mut command_palette: ResMut<CommandPalette>,
+    mut next_tool_state: ResMut<NextState<ToolState>>,
 ) {
     for cmd in cmd_event.iter() {
         match cmd {
-            UICommand::Open => info!("Cmd: Open"),
-            UICommand::Save => info!("Cmd: Save"),
+            CommandMsg::AddTool => next_tool_state.set(ToolState::Add),
+            CommandMsg::EditTool => next_tool_state.set(ToolState::Edit),
+            CommandMsg::TexturePaintTool => next_tool_state.set(ToolState::TexturePaint),
+            CommandMsg::TransformTool => next_tool_state.set(ToolState::Transform),
+            CommandMsg::VertexPaintTool => next_tool_state.set(ToolState::VertexPaint),
         }
     }
 }
@@ -83,7 +88,7 @@ impl CommandPalette {
 
     /// Show the command palette, if it is visible.
     #[must_use = "Returns the command that was selected"]
-    pub fn run(&mut self, egui_ctx: &egui::Context) -> Option<UICommand> {
+    pub fn run(&mut self, egui_ctx: &egui::Context) -> Option<CommandMsg> {
         self.visible &= !egui_ctx.input_mut(|i| i.consume_key(Default::default(), Key::Escape));
         if !self.visible {
             self.query.clear();
@@ -106,7 +111,7 @@ impl CommandPalette {
     }
 
     #[must_use = "Returns the command that was selected"]
-    fn select_command_ui(&mut self, ui: &mut egui::Ui) -> Option<UICommand> {
+    fn select_command_ui(&mut self, ui: &mut egui::Ui) -> Option<CommandMsg> {
         // Check _before_ we add the `TextEdit`, so it doesn't steal it.
         let enter_pressed = ui.input_mut(|i| i.consume_key(Default::default(), Key::Enter));
 
@@ -142,7 +147,7 @@ impl CommandPalette {
         ui: &mut egui::Ui,
         enter_pressed: bool,
         mut scroll_to_selected_alternative: bool,
-    ) -> Option<UICommand> {
+    ) -> Option<CommandMsg> {
         scroll_to_selected_alternative |= ui.input(|i| i.key_pressed(Key::ArrowUp));
         scroll_to_selected_alternative |= ui.input(|i| i.key_pressed(Key::ArrowDown));
 
@@ -239,7 +244,7 @@ impl CommandPalette {
 }
 
 struct FuzzyMatch {
-    command: UICommand,
+    command: CommandMsg,
     score: isize,
     fuzzy_match: Option<sublime_fuzzy::Match>,
 }
@@ -248,7 +253,7 @@ fn commands_that_match(query: &str) -> Vec<FuzzyMatch> {
     use strum::IntoEnumIterator as _;
 
     if query.is_empty() {
-        UICommand::iter()
+        CommandMsg::iter()
             .map(|command| FuzzyMatch {
                 command,
                 score: 0,
@@ -256,7 +261,7 @@ fn commands_that_match(query: &str) -> Vec<FuzzyMatch> {
             })
             .collect()
     } else {
-        let mut matches: Vec<_> = UICommand::iter()
+        let mut matches: Vec<_> = CommandMsg::iter()
             .filter_map(|command| {
                 let target_text = command.str();
                 sublime_fuzzy::best_match(query, target_text).map(|fuzzy_match| FuzzyMatch {

@@ -14,3 +14,4 @@ strum_macros = "0.24"
 sublime_fuzzy = "0.7"
 bevy_egui = "0.21"
 egui_extras = "0.22.0"
+ribasome_state = { path = "../../crates/ribasome_state"}

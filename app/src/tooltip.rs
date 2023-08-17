@@ -1,5 +1,5 @@
 use bevy::{prelude::*, ui::ContentSize};
-use bevy_marker_components::MainCamera;
+use ribasome_state::marker::MainCamera;
 
 #[derive(Component)]
 pub struct ProjectedTextFrom3Dto2D;

@@ -1,5 +1,5 @@
 [package]
-name = "bevy_marker_components"
+name = "bevy_add_tool"
 version = "0.1.0"
 edition = "2021"
 

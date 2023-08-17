@@ -15,8 +15,8 @@ use bevy_inspector_egui::bevy_inspector::{
 use bevy_inspector_egui::DefaultInspectorConfigPlugin;
 use egui_dock::{DockArea, NodeIndex, Style, Tree};
 use egui_gizmo::{Gizmo, GizmoMode, GizmoOrientation};
-use bevy_marker_components::MainCamera;
- 
+use ribasome_state::marker::MainCamera;
+
 pub struct EditorPlugin;
 
 impl Plugin for EditorPlugin {
@@ -359,5 +359,3 @@ fn select_asset(
         });
     }
 }
-
-
