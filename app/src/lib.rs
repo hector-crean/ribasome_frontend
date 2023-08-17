@@ -136,10 +136,11 @@ mod canvas3d {
     use bevy::prelude::*;
     use bevy_cameras::pan_orbit_camera::{OrbitCameraController, OrbitCameraControllerPlugin};
     use bevy_drag::{RaycastPickCamera, Transformable, TransformablePlugin};
-    use bevy_eventlistener::prelude::{Listener, On};
     use bevy_mod_billboard::{prelude::BillboardPlugin, BillboardTextBundle};
     use bevy_mod_outline::{OutlineBundle, OutlineStencil, OutlineVolume};
-    use bevy_mod_picking::prelude::{Down, Pointer, PointerButton, RaycastPickTarget};
+    use bevy_mod_picking::prelude::{
+        Down, Listener, On, Pointer, PointerButton, RaycastPickTarget,
+    };
 
     use crate::{state::camera::CameraModeImpl, FontAssets, GlbAssets};
 

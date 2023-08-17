@@ -5,7 +5,7 @@ pub struct LightRigPlugin;
 
 impl Plugin for LightRigPlugin {
     fn build(&self, app: &mut App) {
-        app.add_systems(Startup, (Self::sunlight));
+        app.add_systems(Startup, (Self::point_light));
     }
 }
 

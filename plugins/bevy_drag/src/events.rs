@@ -1,6 +1,14 @@
 use bevy::prelude::*;
-use bevy_eventlistener::callbacks::ListenerInput;
 use bevy_mod_picking::{events::PointerCancel, prelude::*};
+
+#[derive(Event)]
+struct DoSomethingComplex(Entity, f32);
+
+impl From<ListenerInput<Pointer<Down>>> for DoSomethingComplex {
+    fn from(event: ListenerInput<Pointer<Down>>) -> Self {
+        DoSomethingComplex(event.target, event.hit.depth)
+    }
+}
 
 #[derive(Event, Debug)]
 pub enum EntityPointerEvent {

@@ -8,6 +8,7 @@ version = "0.1.0"
 bitflags = "2.4.0"
 bevy_rapier3d = "0.22.0"
 bevy = { version = "0.11", features = ["jpeg"] }
-bevy_mod_picking = { git = "https://github.com/bardt/bevy_mod_picking", branch = "bevy_0.11" }
-bevy_eventlistener = { git = "https://github.com/aevyrie/bevy_eventlistener.git", rev = "4d8de4c" }
-bevy_mod_raycast = { git = "https://github.com/aevyrie/bevy_mod_raycast", branch = "main" }
+bevy_mod_picking = { git = "https://github.com/aevyrie/bevy_mod_picking"}
+
+
+
