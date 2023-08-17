@@ -7,3 +7,4 @@ edition = "2021"
 
 [dependencies]
 bevy = "0.11"
+bevy_mod_picking = { git = "https://github.com/aevyrie/bevy_mod_picking"}

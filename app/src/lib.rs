@@ -8,6 +8,7 @@ pub mod state;
 pub mod tooltip;
 
 use bevy::{prelude::*, window::PresentMode};
+use bevy_add_tool::AddToolPlugin;
 use bevy_asset_loader::prelude::*;
 use bevy_cameras::pan_orbit_camera::OrbitCameraController;
 use bevy_cmd_palette_plugin::CommandPalettePlugin;
@@ -17,7 +18,7 @@ use bevy_egui::{egui, EguiPlugin};
 use bevy_inspector_egui::quick::WorldInspectorPlugin;
 use bevy_mod_outline::*;
 use bevy_mod_picking::{
-    prelude::{DebugPickingPlugin, DefaultHighlightingPlugin},
+    prelude::{low_latency_window_plugin, DebugPickingPlugin, DefaultHighlightingPlugin},
     DefaultPickingPlugins,
 };
 use dock::TabViewer;
@@ -88,15 +89,7 @@ impl AppPlugin {
 impl Plugin for AppPlugin {
     fn build(&self, app: &mut App) {
         app.add_plugins((
-            DefaultPlugins.set(WindowPlugin {
-                primary_window: Some(Window {
-                    resizable: true,
-                    fit_canvas_to_parent: true,
-                    present_mode: PresentMode::AutoNoVsync,
-                    ..default()
-                }),
-                ..default()
-            }),
+            DefaultPlugins.set(low_latency_window_plugin()),
             DefaultPickingPlugins
                 .build()
                 .disable::<DebugPickingPlugin>(),
@@ -106,6 +99,10 @@ impl Plugin for AppPlugin {
             CommandPalettePlugin,
             FileDragAndDropPlugin,
             LightRigPlugin,
+            AddToolPlugin::<ToolState> {
+                run_state: ToolState::Add,
+                on_exit_state: ToolState::Transform,
+            },
         ))
         .add_state::<AppState>()
         .add_state::<ToolState>()

@@ -30,6 +30,7 @@ bevy_drag = { path = "../plugins/bevy_drag" }
 bevy_cameras = { path = "../plugins/bevy_cameras" }
 ribasome_models = { git = "https://github.com/hector-crean/ribasome_models", branch = "main" }
 bevy_cmd_palette_plugin = { path = "../plugins/bevy_cmd_palette_plugin"}
+bevy_add_tool = { path = "../plugins/bevy_add_tool"}
 
 #errors
 thiserror = "1.0.38"

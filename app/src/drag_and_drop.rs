@@ -1,3 +1,5 @@
+use bevy::{math::vec4, prelude::*};
+use bevy_mod_picking::prelude::*;
 use std::{ffi::OsStr, fs, io, path::PathBuf};
 
 use bevy::{
@@ -34,7 +36,8 @@ pub struct FileDragAndDropPlugin;
 
 impl Plugin for FileDragAndDropPlugin {
     fn build(&self, app: &mut App) {
-        app.add_systems(Update, (file_drag_and_drop, consume_gltf_loading));
+        app.add_systems(Update, (file_drag_and_drop, consume_gltf_loading))
+            .add_systems(PostUpdate, (make_pickable));
     }
 }
 
@@ -67,9 +70,27 @@ pub fn file_drag_and_drop(
     }
 }
 
+/// Used to tint the mesh instead of simply replacing the mesh's material with a single color. See
+/// `tinted_highlight` for more details.
+const HIGHLIGHT_TINT: Highlight<StandardMaterial> = Highlight {
+    hovered: Some(HighlightKind::new_dynamic(|matl| StandardMaterial {
+        base_color: matl.base_color + vec4(-0.5, -0.3, 0.9, 0.8), // hovered is blue
+        ..matl.to_owned()
+    })),
+    pressed: Some(HighlightKind::new_dynamic(|matl| StandardMaterial {
+        base_color: matl.base_color + vec4(-0.4, -0.4, 0.8, 0.8), // pressed is a different blue
+        ..matl.to_owned()
+    })),
+    selected: Some(HighlightKind::new_dynamic(|matl| StandardMaterial {
+        base_color: matl.base_color + vec4(-0.4, 0.8, -0.4, 0.0), // selected is green
+        ..matl.to_owned()
+    })),
+};
+
 fn consume_gltf_loading(
     mut ev_asset: EventReader<AssetEvent<Gltf>>,
     gltfs: ResMut<Assets<Gltf>>,
+    meshes: ResMut<Assets<Mesh>>,
     mut commands: Commands,
 ) {
     for ev in ev_asset.iter() {
@@ -81,11 +102,11 @@ fn consume_gltf_loading(
                 match gltf {
                     Some(gltf) => {
                         for scene in &gltf.scenes {
-                            commands.spawn(SceneBundle {
+                            commands.spawn((SceneBundle {
                                 transform: Transform::from_xyz(0.0, 0.0, 0.0),
                                 scene: scene.clone(),
                                 ..default()
-                            });
+                            },));
                         }
                     }
                     None => {}
@@ -98,5 +119,18 @@ fn consume_gltf_loading(
                 // an image was unloaded
             }
         }
+    }
+}
+
+fn make_pickable(
+    mut commands: Commands,
+    meshes: Query<Entity, (With<Handle<Mesh>>, Without<RaycastPickTarget>)>,
+) {
+    for entity in meshes.iter() {
+        commands.entity(entity).insert((
+            PickableBundle::default(),
+            RaycastPickTarget::default(),
+            HIGHLIGHT_TINT.clone(),
+        ));
     }
 }
