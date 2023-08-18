@@ -7,7 +7,11 @@ pub mod marker_component;
 pub mod state;
 pub mod tooltip;
 
-use bevy::{prelude::*, window::PresentMode};
+use bevy::{
+    diagnostic::{FrameTimeDiagnosticsPlugin, LogDiagnosticsPlugin},
+    prelude::*,
+    window::PresentMode,
+};
 use bevy_add_tool::AddToolPlugin;
 use bevy_asset_loader::prelude::*;
 use bevy_cameras::pan_orbit_camera::OrbitCameraController;
@@ -21,6 +25,8 @@ use bevy_mod_picking::{
     prelude::{low_latency_window_plugin, DebugPickingPlugin, DefaultHighlightingPlugin},
     DefaultPickingPlugins,
 };
+use bevy_mod_reqwest::*;
+
 use dock::TabViewer;
 use drag_and_drop::{file_drag_and_drop, FileDragAndDropPlugin};
 use egui_dock::{DockArea, NodeIndex, Style, Tree};
@@ -45,8 +51,8 @@ pub struct FontAssets {
 
 #[derive(AssetCollection, Resource)]
 pub struct GlbAssets {
-    #[asset(path = "glb/AF-Q8W3K0-F1.glb#Scene0")]
-    pub AF_Q8W3K0_F1: Handle<Scene>,
+    // #[asset(path = "glb/AF-Q8W3K0-F1.glb#Scene0")]
+    // pub AF_Q8W3K0_F1: Handle<Scene>,
 }
 
 const TEXT_COLOR: Color = Color::rgb(0.9, 0.9, 0.9);
@@ -90,6 +96,8 @@ impl Plugin for AppPlugin {
     fn build(&self, app: &mut App) {
         app.add_plugins((
             DefaultPlugins.set(low_latency_window_plugin()),
+            LogDiagnosticsPlugin::default(),
+            FrameTimeDiagnosticsPlugin::default(),
             DefaultPickingPlugins
                 .build()
                 .disable::<DebugPickingPlugin>(),
@@ -103,6 +111,7 @@ impl Plugin for AppPlugin {
                 run_states: [ToolState::Add, ToolState::Edit],
                 on_exit_state: ToolState::Transform,
             },
+            ReqwestPlugin,
         ))
         .add_state::<AppState>()
         .add_state::<ToolState>()

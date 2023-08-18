@@ -15,7 +15,7 @@ path = "src/main.rs"
 
 [dependencies]
 bevy = { version = "0.11", features = ["jpeg"] }
-bevy_mod_picking = { git = "https://github.com/aevyrie/bevy_mod_picking"}
+bevy_mod_picking = { git = "https://github.com/aevyrie/bevy_mod_picking" }
 
 bevy_mod_billboard = { git = "https://github.com/kulkalkul/bevy_mod_billboard", rev = "deab993339801252936218ca0169fac63b42bb9d" }
 bevy_asset_loader = "0.17.0"
@@ -23,14 +23,16 @@ bevy_egui = "0.21"
 bevy-inspector-egui = "0.19.0"
 egui_dock = "0.6.3"
 bevy_mod_outline = "0.5"
+bevy_mod_reqwest = "0.11.1"
+
 #internal
-ribasome_state = { path = "../crates/ribasome_state"}
-bevy_editor = { path = "../plugins/bevy_editor"}
+ribasome_state = { path = "../crates/ribasome_state" }
+bevy_editor = { path = "../plugins/bevy_editor" }
 bevy_drag = { path = "../plugins/bevy_drag" }
 bevy_cameras = { path = "../plugins/bevy_cameras" }
 ribasome_models = { git = "https://github.com/hector-crean/ribasome_models", branch = "main" }
-bevy_cmd_palette_plugin = { path = "../plugins/bevy_cmd_palette_plugin"}
-bevy_add_tool = { path = "../plugins/bevy_add_tool"}
+bevy_cmd_palette_plugin = { path = "../plugins/bevy_cmd_palette_plugin" }
+bevy_add_tool = { path = "../plugins/bevy_add_tool" }
 
 #errors
 thiserror = "1.0.38"
