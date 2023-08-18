@@ -99,8 +99,8 @@ impl Plugin for AppPlugin {
             CommandPalettePlugin,
             FileDragAndDropPlugin,
             LightRigPlugin,
-            AddToolPlugin::<ToolState> {
-                run_state: ToolState::Add,
+            AddToolPlugin::<ToolState, 2> {
+                run_states: [ToolState::Add, ToolState::Edit],
                 on_exit_state: ToolState::Transform,
             },
         ))

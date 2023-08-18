@@ -14,16 +14,16 @@ pub enum AddToolState {
     Polyline,
 }
 
-pub struct AddToolPlugin<S: Debug + Clone + Copy + Default + Eq + PartialEq + Hash + States> {
-    pub run_state: S,
+pub struct AddToolPlugin<S: States + Copy + Clone, const I: usize> {
+    pub run_states: [S; I],
     pub on_exit_state: S,
 }
 
-impl<S> AddToolPlugin<S> where S: Debug + Clone + Copy + Default + Eq + PartialEq + Hash + States {}
+impl<S, const I: usize> AddToolPlugin<S, I> where S: States + Debug + Copy {}
 
-impl<S> Plugin for AddToolPlugin<S>
+impl<S, const I: usize> Plugin for AddToolPlugin<S, I>
 where
-    S: Debug + Clone + Copy + Default + Eq + PartialEq + Hash + States,
+    S: States + Debug + Copy,
 {
     fn build(&self, app: &mut App) {
         app.add_state::<AddToolState>()
@@ -46,8 +46,14 @@ where
                         .chain()
                         .run_if(in_state(AddToolState::Polyline)),
                 )
-                    .run_if(in_state(self.run_state)),
+                    .run_if(in_any_state_from(self.run_states)),
             );
         // .add_systems(OnExit(ToolState::Move), cleanup::<PenToolSystem>);
     }
+}
+
+pub fn in_any_state_from<S: States, const I: usize>(
+    states: [S; I],
+) -> impl FnMut(Res<State<S>>) -> bool + Clone {
+    move |current_state: Res<State<S>>| states.iter().any(|s| *current_state == *s)
 }

@@ -9,7 +9,10 @@ use bevy::{
     render::camera::Camera,
 };
 use bevy_mod_picking::{
-    debug::DebugPickingPlugin, pointer::InputMove, prelude::PointerButton, DefaultPickingPlugins,
+    debug::DebugPickingPlugin,
+    pointer::InputMove,
+    prelude::{Down, Drag, DragEnd, DragStart, Pointer, PointerButton},
+    DefaultPickingPlugins,
 };
 use std::ops::RangeInclusive;
 
@@ -22,16 +25,23 @@ impl<T: CameraMode + Send + Sync + 'static> Plugin for OrbitCameraControllerPlug
             .add_event::<OrbitCameraControllerEvents>()
             .add_systems(
                 Update,
+                (Self::emit_motion_events, Self::emit_zoom_events).distributive_run_if(
+                    run_criteria::<T>
+                        .and_then(not(on_event::<Pointer<DragStart>>()))
+                        .and_then(not(on_event::<Pointer<Drag>>()))
+                        .and_then(not(on_event::<Pointer<DragEnd>>()))
+                        .and_then(not(on_event::<Pointer<Down>>())),
+                ),
+            )
+            .add_systems(
+                PostUpdate,
                 (
-                    Self::emit_motion_events,
-                    Self::emit_zoom_events,
                     Self::consume_pan_and_orbit_events,
                     Self::consume_zoom_events,
-                    Self::update_camera_transform_system,
                 )
-                    .chain()
-                    .distributive_run_if(run_criteria::<T>),
-            );
+                    .run_if(on_event::<OrbitCameraControllerEvents>()),
+            )
+            .add_systems(Last, (Self::update_camera_transform_system,));
     }
 }
 
