@@ -5,6 +5,9 @@
 
 #![deny(unsafe_code)]
 
+pub mod annotation;
+pub mod rich_text;
+
 use std::{
     cmp::Ordering,
     collections::{BTreeSet, HashMap},
@@ -14,12 +17,10 @@ use std::{
 };
 
 use rich_text::Error;
+pub use rich_text::{vv::VersionVector, RichText};
 use serde::{Deserialize, Serialize};
 use serde_json::Value;
 use string_cache::DefaultAtom;
-
-pub mod rich_text;
-pub use rich_text::{vv::VersionVector, RichText};
 mod small_set;
 #[cfg(feature = "test")]
 mod test_utils;

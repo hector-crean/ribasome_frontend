@@ -26,6 +26,7 @@ use bevy_mod_picking::{
     DefaultPickingPlugins,
 };
 use bevy_mod_reqwest::*;
+use bevy_rich_text_editor::RichTextEditorPlugin;
 
 use dock::TabViewer;
 use drag_and_drop::{file_drag_and_drop, FileDragAndDropPlugin};
@@ -111,6 +112,7 @@ impl Plugin for AppPlugin {
                 run_states: [ToolState::Add, ToolState::Edit],
                 on_exit_state: ToolState::Transform,
             },
+            RichTextEditorPlugin,
             ReqwestPlugin,
         ))
         .add_state::<AppState>()

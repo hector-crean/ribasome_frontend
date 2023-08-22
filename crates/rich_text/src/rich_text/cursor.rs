@@ -106,7 +106,9 @@ impl CursorMap {
 }
 
 fn listen(event: MoveEvent<Elem>, m: &mut IdMap<Cursor>) {
-    let Some(leaf) = event.target_leaf else { return };
+    let Some(leaf) = event.target_leaf else {
+        return;
+    };
     let elem = event.elem;
     let mut id = elem.id;
     let mut cursor = Cursor::Insert(leaf);
