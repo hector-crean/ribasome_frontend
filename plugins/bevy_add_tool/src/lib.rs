@@ -6,6 +6,7 @@ use std::{fmt::Debug, hash::Hash};
 use bevy::prelude::*;
 use point::{PointTool, PointToolCommand};
 use polyline::PolylineTool;
+use bevy_ui_widgets::widget::tooltip::TooltipPlugin;
 
 #[derive(Debug, Clone, Copy, Default, Eq, PartialEq, Hash, States)]
 pub enum AddToolState {
@@ -26,7 +27,9 @@ where
     S: States + Debug + Copy,
 {
     fn build(&self, app: &mut App) {
-        app.add_state::<AddToolState>()
+        app     
+        .add_plugins(TooltipPlugin)
+        .add_state::<AddToolState>()
             .insert_resource(PointTool::default())
             .insert_resource(PolylineTool::default())
             .add_event::<PointToolCommand>()

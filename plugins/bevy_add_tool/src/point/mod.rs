@@ -4,6 +4,7 @@ use bevy_mod_picking::{
     events::{Click, Down, Pointer},
 };
 use bevy_mod_reqwest::*;
+use bevy_ui_widgets::widget::tooltip::*;
 
 #[derive(Resource, Default)]
 pub struct PointTool;
@@ -27,22 +28,69 @@ impl PointTool {
         mut commands: Commands,
         mut meshes: ResMut<Assets<Mesh>>,
         mut materials: ResMut<Assets<StandardMaterial>>,
+        mut asset_server: ResMut<AssetServer>,
     ) {
         for ev in point_tool_evts.iter() {
             match ev {
                 PointToolCommand::Create { position } => {
-                    commands.spawn(PbrBundle {
-                        mesh: meshes.add(Mesh::from(shape::Cube { size: 0.05 })),
-                        material: materials.add(Color::rgb(0.8, 0.7, 0.6).into()),
-                        transform: Transform::from_translation(*position),
-                        ..default()
-                    });
+                    let mesh_entity = commands
+                        .spawn(PbrBundle {
+                            mesh: meshes.add(Mesh::from(shape::Cube { size: 0.05 })),
+                            material: materials.add(Color::rgb(0.8, 0.7, 0.6).into()),
+                            transform: Transform::from_translation(*position),
+                            ..default()
+                        })
+                        .id();
 
-                    if let Ok(url) = "https://www.boredapi.com/api/activity".try_into() {
-                        let req = reqwest::Request::new(reqwest::Method::GET, url);
-                        let req = ReqwestRequest::new(req);
-                        commands.spawn(req);
-                    }
+                    let tooltip_content = commands
+                        .spawn((
+                            TextBundle {
+                                text: Text::from_section(
+                                    "This is example text",
+                                    TextStyle {
+                                        font: asset_server
+                                            .load("fonts/iosevka-extendedheavyoblique.ttf"),
+                                        font_size: 10.,
+                                        color: Color::rgb(0.9, 0.9, 0.9),
+                                    },
+                                ),
+                                style: Style {
+                                    width: Val::Px(120.),
+                                    height: Val::Px(120.),
+                                    border: UiRect::all(Val::Px(2.)),
+                                    display: Display::Flex,
+                                    align_items: AlignItems::Center,
+                                    justify_content: JustifyContent::Center,
+
+                                    ..default()
+                                },
+                                background_color: Color::rgba(
+                                    108. / 180.,
+                                    130. / 180.,
+                                    142. / 180.,
+                                    0.1,
+                                )
+                                .into(),
+                                ..default()
+                            },
+                            Label,
+                        ))
+                        .id();
+
+                    commands
+                        .spawn(
+                            (TooltipBundle {
+                                anchor: TooltipAnchor::AlignedToMesh(mesh_entity),
+                                ..default()
+                            }),
+                        )
+                        .add_child(tooltip_content);
+
+                    // if let Ok(url) = "https://www.boredapi.com/api/activity".try_into() {
+                    //     let req = reqwest::Request::new(reqwest::Method::GET, url);
+                    //     let req = ReqwestRequest::new(req);
+                    //     commands.spawn(req);
+                    // }
                 }
             }
         }
