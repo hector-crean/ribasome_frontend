@@ -1,11 +1,24 @@
 pub mod command;
 pub mod cursor;
+pub mod editor;
+pub mod highlighter;
+pub mod parser;
+pub mod viewer;
 
 use std::sync::Arc;
 
 use bevy::prelude::*;
-use bevy_egui::{egui, EguiContexts};
-use rich_text::RichText as RichTextInner;
+use bevy_egui::{
+    egui::{
+        self,
+        epaint::{
+            text::{LayoutJob, TextFormat},
+            Color32, FontFamily, FontId,
+        },
+    },
+    EguiContexts,
+};
+use rich_text::RichText as RichTextBufferInner;
 
 use bevy::prelude::*;
 
@@ -31,12 +44,12 @@ impl RichTextEditorPlugin {
     }
 }
 
-pub struct RichText(RichTextInner);
+pub struct RichTextBuffer(RichTextBufferInner);
 
 // Implement the Deref trait to allow implicit dereferencing
 // use std::ops::Deref;
 // impl Deref for RichText {
-//     type Target = RichTextInner;
+//     type Target = RichTextBufferInner;
 
 //     fn deref(&self) -> &Self::Target {
 //         &self.0
@@ -44,25 +57,26 @@ pub struct RichText(RichTextInner);
 // }
 
 // Implement From and Into traits for easy conversion
-impl From<RichTextInner> for RichText {
-    fn from(crdt: RichTextInner) -> Self {
-        RichText(crdt)
+impl From<RichTextBufferInner> for RichTextBuffer {
+    fn from(buffer: RichTextBufferInner) -> Self {
+        RichTextBuffer(buffer)
     }
 }
 
-impl From<RichText> for RichTextInner {
-    fn from(rich_text: RichText) -> Self {
-        rich_text.0
+impl From<RichTextBuffer> for RichTextBufferInner {
+    fn from(rich_text_buffer: RichTextBuffer) -> Self {
+        rich_text_buffer.0
     }
 }
 
-impl RichText {
-    pub fn new(crdt: RichTextInner) -> Self {
-        RichText(crdt)
+impl RichTextBuffer {
+    pub fn new(buffer: RichTextBufferInner) -> Self {
+        RichTextBuffer(buffer)
     }
 }
 
-impl egui::TextBuffer for RichText {
+///
+impl egui::TextBuffer for RichTextBuffer {
     fn as_str(&self) -> &str {
         todo!()
     }
@@ -127,20 +141,35 @@ impl View for RichTextEditor {
             ui.label(".");
         });
 
-        let output = egui::TextEdit::multiline(&mut self.rich_text)
-            .hint_text("Type something!")
-            .show(ui);
+        let mut layouter = |ui: &egui::Ui, string: &str, wrap_width: f32| {
+            let mut job = LayoutJob::default();
+            job.wrap.max_width = wrap_width;
+            ui.fonts(|f| f.layout_job(job))
+        };
 
-        ui.horizontal(|ui| {
-            ui.spacing_mut().item_spacing.x = 0.0;
-            ui.label("Selected text: ");
-            if let Some(text_cursor_range) = output.cursor_range {
-                use egui::TextBuffer as _;
-                let selected_chars = text_cursor_range.as_sorted_char_range();
-                let selected_text = self.rich_text.char_range(selected_chars);
-                ui.code(selected_text);
-            }
+        let text_buffer = egui::TextEdit::multiline(&mut self.rich_text)
+            .hint_text("Type something!")
+            .font(egui::TextStyle::Monospace) // for cursor height
+            .code_editor()
+            .desired_rows(10)
+            .lock_focus(true)
+            .desired_width(f32::INFINITY)
+            .layouter(&mut layouter);
+
+        egui::ScrollArea::vertical().show(ui, |ui| {
+            ui.add(text_buffer);
         });
+
+        // ui.horizontal(|ui| {
+        //     ui.spacing_mut().item_spacing.x = 0.0;
+        //     ui.label("Selected text: ");
+        //     if let Some(text_cursor_range) = output.cursor_range {
+        //         use egui::TextBuffer as _;
+        //         let selected_chars = text_cursor_range.as_sorted_char_range();
+        //         let selected_text = self.rich_text.char_range(selected_chars);
+        //         ui.code(selected_text);
+        //     }
+        // });
     }
 }
 
