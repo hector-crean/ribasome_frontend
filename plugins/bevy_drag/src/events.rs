@@ -96,7 +96,7 @@ impl From<ListenerInput<Pointer<DragStart>>> for EntityPointerEvent {
         EntityPointerEvent::DragStart {
             entity: event.target,
             data: DragStart {
-                hit: event.hit,
+                hit: event.hit.clone(),
                 button: event.button,
             },
             pointer_id: event.pointer_id,
@@ -122,7 +122,9 @@ impl From<ListenerInput<Pointer<Over>>> for EntityPointerEvent {
     fn from(event: ListenerInput<Pointer<Over>>) -> Self {
         EntityPointerEvent::Over {
             entity: event.target,
-            data: Over { hit: event.hit },
+            data: Over {
+                hit: event.hit.clone(),
+            },
             pointer_id: event.pointer_id,
             pointer_position: event.pointer_location.position,
         }
@@ -136,7 +138,7 @@ impl From<ListenerInput<Pointer<DragLeave>>> for EntityPointerEvent {
             data: DragLeave {
                 button: event.button,
                 dragged: event.target,
-                hit: event.hit,
+                hit: event.hit.clone(),
             },
             pointer_id: event.pointer_id,
             pointer_position: event.pointer_location.position,
@@ -151,7 +153,7 @@ impl From<ListenerInput<Pointer<Drop>>> for EntityPointerEvent {
             data: Drop {
                 button: event.button,
                 dropped: event.target,
-                hit: event.hit,
+                hit: event.hit.clone(),
             },
             pointer_id: event.pointer_id,
             pointer_position: event.pointer_location.position,
@@ -163,7 +165,9 @@ impl From<ListenerInput<Pointer<Out>>> for EntityPointerEvent {
     fn from(event: ListenerInput<Pointer<Out>>) -> Self {
         EntityPointerEvent::Out {
             entity: event.target,
-            data: Out { hit: event.hit },
+            data: Out {
+                hit: event.hit.clone(),
+            },
             pointer_id: event.pointer_id,
             pointer_position: event.pointer_location.position,
         }
@@ -175,7 +179,7 @@ impl From<ListenerInput<Pointer<Click>>> for EntityPointerEvent {
         EntityPointerEvent::Click {
             entity: event.target,
             data: Click {
-                hit: event.hit,
+                hit: event.hit.clone(),
                 button: event.button,
             },
             pointer_id: event.pointer_id,
@@ -189,7 +193,7 @@ impl From<ListenerInput<Pointer<Down>>> for EntityPointerEvent {
         EntityPointerEvent::Down {
             entity: event.target,
             data: Down {
-                hit: event.hit,
+                hit: event.hit.clone(),
                 button: event.button,
             },
             pointer_id: event.pointer_id,
@@ -203,7 +207,7 @@ impl From<ListenerInput<Pointer<Up>>> for EntityPointerEvent {
         EntityPointerEvent::Up {
             entity: event.target,
             data: Up {
-                hit: event.hit,
+                hit: event.hit.clone(),
                 button: event.button,
             },
             pointer_id: event.pointer_id,
@@ -217,7 +221,7 @@ impl From<ListenerInput<Pointer<Move>>> for EntityPointerEvent {
         EntityPointerEvent::Move {
             entity: event.target,
             data: Move {
-                hit: event.hit,
+                hit: event.hit.clone(),
                 delta: event.delta,
             },
             pointer_id: event.pointer_id,

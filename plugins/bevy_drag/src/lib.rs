@@ -27,12 +27,9 @@ impl<T: CameraMode + Send + Sync + 'static> Plugin for TransformablePlugin<T> {
             .add_event::<EntityPointerEvent>()
             .add_event::<TransformEvent>()
             .add_systems(PostStartup, Self::setup_raycast_camera)
+            .add_systems(PostUpdate, Self::emit_transform_events)
             .add_systems(
-                Update,
-                Self::emit_transform_events.run_if(on_event::<EntityPointerEvent>()),
-            )
-            .add_systems(
-                PostUpdate,
+                Last,
                 Self::consume_transform_events.run_if(Self::run_criteria),
             );
     }
@@ -56,99 +53,89 @@ impl<T: CameraMode + Send + Sync + 'static> TransformablePlugin<T> {
     }
 
     fn emit_transform_events(
-        mut drags_rdr: EventReader<EntityPointerEvent>,
+        // mut drags_rdr: EventReader<EntityPointerEvent>,
+        mut drag_evt_rdr: EventReader<Pointer<Drag>>,
+        mut dragstart_evt_rdr: EventReader<Pointer<DragStart>>,
+        mut dragend_evt_rdr: EventReader<Pointer<DragEnd>>,
         mut transformable_query: Query<TransformableQuery>,
         raycast_camera_query: Query<(&GlobalTransform, &Camera)>,
         mut transform_event_wtr: EventWriter<TransformEvent>,
         mut camera_controller: ResMut<T>,
     ) {
-        for event in drags_rdr.iter() {
-            use EntityPointerEvent::*;
-            match event {
-                DragStart {
-                    entity,
-                    pointer_id: _,
-                    pointer_position: _,
-                    data,
-                } => {
-                    camera_controller.lock();
+        for ev in dragstart_evt_rdr.iter() {
+            let Pointer {
+                target,
+                pointer_id,
+                pointer_location,
+                event,
+            } = ev;
 
-                    if let Ok(TransformableQueryItem {
-                        mut controller,
-                        transform,
-                        ..
-                    }) = transformable_query.get_mut(*entity)
-                    {
-                        controller.drag_start_entity_position = Some(transform.translation);
-                        controller.drag_start_pointer_position = data.hit.position;
-                    }
-                }
-                Drag {
-                    entity,
-                    pointer_id: _,
-                    pointer_position,
-                    data: _,
-                } => match transformable_query.get(*entity) {
-                    Ok(TransformableQueryReadOnlyItem {
-                        entity,
-                        controller,
-                        transform: _,
-                        ..
-                    }) => {
-                        let TransformController {
-                            enabled,
-                            drag_start_entity_position,
-                            drag_start_pointer_position,
-                        } = controller;
+            camera_controller.lock();
 
-                        if !enabled {
-                            continue;
-                        }
-
-                        let (camera_transform, camera) = raycast_camera_query.single();
-                        let logical_viewport_size = camera.logical_viewport_size().unwrap();
-                        let camera_affine3A = camera_transform.affine();
-                        let view_mat4 = Mat4::from(camera_affine3A);
-                        let inverse_view_mat4 = view_mat4.inverse();
-                        let proj_mat4 = Camera::projection_matrix(camera);
-                        let inverse_proj_mat4: Mat4 = proj_mat4.inverse();
-
-                        if let (
-                            Some(drag_start_entity_position),
-                            Some(drag_start_pointer_position),
-                        ) = (*drag_start_entity_position, *drag_start_pointer_position)
-                        {
-                            let offset = drag_start_entity_position - drag_start_pointer_position;
-
-                            let translation = world_position_view_plane_intersection_world(
-                                drag_start_pointer_position,
-                                *pointer_position,
-                                logical_viewport_size,
-                                view_mat4,
-                                inverse_view_mat4,
-                                inverse_proj_mat4,
-                            ) + offset;
-
-                            let event = TransformEvent::Translate((entity, translation));
-
-                            transform_event_wtr.send(event)
-                        }
-                    }
-
-                    Err(err) => {
-                        info!("{:?}", err)
-                    }
-                },
-                DragEnd {
-                    entity: _,
-                    pointer_id: _,
-                    pointer_position: _,
-                    data: _,
-                } => {
-                    camera_controller.unlock();
-                }
-                _ => {}
+            if let Ok(TransformableQueryItem {
+                mut controller,
+                transform,
+                ..
+            }) = transformable_query.get_mut(*target)
+            {
+                controller.drag_start_entity_position = Some(transform.translation);
+                controller.drag_start_pointer_position = event.hit.position;
             }
+        }
+        for ev in drag_evt_rdr.iter() {
+            let Pointer {
+                target,
+                pointer_id,
+                pointer_location,
+                event,
+            } = ev;
+            match transformable_query.get(*target) {
+                Ok(TransformableQueryReadOnlyItem { controller, .. }) => {
+                    let TransformController {
+                        enabled,
+                        drag_start_entity_position,
+                        drag_start_pointer_position,
+                    } = controller;
+
+                    if !enabled {
+                        continue;
+                    }
+
+                    let (camera_transform, camera) = raycast_camera_query.single();
+                    let logical_viewport_size = camera.logical_viewport_size().unwrap();
+                    let camera_affine3A = camera_transform.affine();
+                    let view_mat4 = Mat4::from(camera_affine3A);
+                    let inverse_view_mat4 = view_mat4.inverse();
+                    let proj_mat4 = Camera::projection_matrix(camera);
+                    let inverse_proj_mat4: Mat4 = proj_mat4.inverse();
+
+                    if let (Some(drag_start_entity_position), Some(drag_start_pointer_position)) =
+                        (*drag_start_entity_position, *drag_start_pointer_position)
+                    {
+                        let offset = drag_start_entity_position - drag_start_pointer_position;
+
+                        let translation = world_position_view_plane_intersection_world(
+                            drag_start_pointer_position,
+                            pointer_location.position,
+                            logical_viewport_size,
+                            view_mat4,
+                            inverse_view_mat4,
+                            inverse_proj_mat4,
+                        ) + offset;
+
+                        let event = TransformEvent::Translate((*target, translation));
+
+                        transform_event_wtr.send(event)
+                    }
+                }
+
+                Err(err) => {
+                    info!("{:?}", err)
+                }
+            }
+        }
+        for ev in dragend_evt_rdr.iter() {
+            camera_controller.unlock();
         }
     }
 
@@ -178,9 +165,9 @@ pub struct Transformable {
     pickable_bundle: PickableBundle,
     raycast_target: RaycastPickTarget, // <- Needed for the raycast backend.
     transform_controller: TransformController,
-    drag: On<Pointer<Drag>>,
-    dragstart: On<Pointer<DragStart>>,
-    dragend: On<Pointer<DragEnd>>,
+    // drag: On<Pointer<Drag>>,
+    // dragstart: On<Pointer<DragStart>>,
+    // dragend: On<Pointer<DragEnd>>,
 }
 
 //note: the entity also need to have a mesh component
@@ -190,9 +177,9 @@ impl Default for Transformable {
             pickable_bundle: PickableBundle::default(),
             raycast_target: RaycastPickTarget::default(),
             transform_controller: TransformController::default(),
-            drag: On::<Pointer<Drag>>::send_event::<EntityPointerEvent>(),
-            dragstart: On::<Pointer<DragStart>>::send_event::<EntityPointerEvent>(),
-            dragend: On::<Pointer<DragEnd>>::send_event::<EntityPointerEvent>(),
+            // drag: On::<Pointer<Drag>>::send_event::<EntityPointerEvent>(),
+            // dragstart: On::<Pointer<DragStart>>::send_event::<EntityPointerEvent>(),
+            // dragend: On::<Pointer<DragEnd>>::send_event::<EntityPointerEvent>(),
         }
     }
 }
@@ -200,18 +187,18 @@ impl Default for Transformable {
 #[derive(WorldQuery)]
 #[world_query(mutable)]
 pub struct TransformableQuery {
-    entity: Entity,
+    // entity: Entity,
     controller: &'static mut TransformController,
-    interaction: &'static Interaction,
-    raycast_target: &'static RaycastPickTarget,
+    // interaction: &'static Interaction,
+    // raycast_target: &'static RaycastPickTarget,
     transform: &'static mut Transform,
 
-    #[cfg(feature = "selection")]
-    pub selection: &'static PickSelection,
-    #[cfg(feature = "highlight")]
-    pub highlight: &'static PickHighlight,
+    // #[cfg(feature = "selection")]
+    // pub selection: &'static PickSelection,
+    // #[cfg(feature = "highlight")]
+    // pub highlight: &'static PickHighlight,
     _pickable: With<Pickable>,
-    _drag: With<On<Pointer<Drag>>>,
-    _dragstart: With<On<Pointer<DragStart>>>,
-    _dragend: With<On<Pointer<DragEnd>>>,
+    // _drag: With<On<Pointer<Drag>>>,
+    // _dragstart: With<On<Pointer<DragStart>>>,
+    // _dragend: With<On<Pointer<DragEnd>>>,
 }

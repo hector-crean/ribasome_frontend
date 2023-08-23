@@ -6,7 +6,7 @@ edition = "2021"
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
 [dependencies]
-bevy_mod_picking = { git = "https://github.com/aevyrie/bevy_mod_picking"}
+bevy_mod_picking = { version="0.15",  features=["all"] }
 
 
 bevy_polyline = "0.7.0"

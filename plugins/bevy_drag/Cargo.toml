@@ -8,7 +8,7 @@ edition = "2021"
 [dependencies]
 bevy = "0.11"
 bevy_cameras = { path = "../bevy_cameras" }
-bevy_mod_picking = { git = "https://github.com/aevyrie/bevy_mod_picking"}
+bevy_mod_picking = { version="0.15",  features=["all"] }
 bevy_mod_raycast = "0.11.0"
 
 

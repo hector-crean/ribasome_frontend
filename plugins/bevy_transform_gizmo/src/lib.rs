@@ -399,7 +399,7 @@ fn hover_gizmo(
             hits.send(PointerHits {
                 pointer: PointerId::Mouse,
                 picks: vec![(gizmo_entity, data)],
-                order: 1000,
+                order: 1000.,
             });
         }
     }

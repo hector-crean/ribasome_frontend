@@ -5,8 +5,10 @@ use crate::{
 };
 use bevy::{ecs::query::WorldQuery, prelude::*};
 use bevy_cameras::CameraMode;
-pub use bevy_mod_picking::prelude::RaycastPickCamera;
-use bevy_mod_picking::{backends::raycast::RaycastPickingSet, events::PointerCancel, prelude::*};
+pub use bevy_mod_picking::prelude::*;
+use bevy_mod_picking::{
+    backends::raycast::RaycastPickingSet, events::PointerCancel, prelude::RaycastPickTarget,
+};
 use bevy_mod_raycast::RaycastMesh;
 
 // Must insert this bundle into any entity, which we want to make draggeable

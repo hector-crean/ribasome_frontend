@@ -18,7 +18,7 @@ bevy = { version = "0.11", default-features = false, features = [
     "bevy_render",
     "bevy_core_pipeline",
 ] }
-bevy_mod_picking = { git = "https://github.com/aevyrie/bevy_mod_picking"}
+bevy_mod_picking = { version="0.15",  features=["all"] }
 bevy_mod_raycast = "0.11.0"
 
 
@@ -31,4 +31,4 @@ bevy = { version = "0.11", default-features = false, features = [
     "ktx2",
     "zstd",
 ] }
-bevy_mod_picking = { git = "https://github.com/aevyrie/bevy_mod_picking"}
+bevy_mod_picking = { version="0.15",  features=["all"] }
