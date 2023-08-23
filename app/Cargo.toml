@@ -34,7 +34,7 @@ ribasome_models = { git = "https://github.com/hector-crean/ribasome_models", bra
 bevy_cmd_palette_plugin = { path = "../plugins/bevy_cmd_palette_plugin" }
 bevy_add_tool = { path = "../plugins/bevy_add_tool" }
 bevy_rich_text_editor = { path = "../plugins/bevy_rich_text_editor" }
-
+bevy_easymark_editor = { path = "../plugins/bevy_easymark_editor"}
 #errors
 thiserror = "1.0.38"
 color-eyre = "0.6.2"
