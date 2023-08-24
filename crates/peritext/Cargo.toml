@@ -1,5 +1,5 @@
 [package]
-name = "rich_text"
+name = "peritext"
 version = "0.1.1"
 edition = "2021"
 license = "MIT"
@@ -11,7 +11,6 @@ authors = ["zxch3n <remch183@outlook.com>"]
 keywords = ["crdt", "p2p", "richtext", "text-editing"]
 include = ["Cargo.toml", "src/**/*.rs", "benches/**/*.rs", "examples/**/*.rs"]
 documentation = "https://docs.rs/crdt-richtext"
-
 
 
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
@@ -35,11 +34,13 @@ serde = { version = "1.0.140", features = ["derive"] }
 flate2 = "1.0.25"
 serde_json = "1.0"
 thiserror = "1.0"
-chrono = {versuon="0.4.26", features=["serde"]}
+chrono = { versuon = "0.4.26", features = ["serde"] }
+strum = { version = "0.25.0", features = ["derive"] }
+
 
 [dev-dependencies]
 rand = { version = "0.8.5" }
-pprof = { version = "0.11.1", features = [
+pprof = { version = "0.12.1", features = [
   "flamegraph",
   "criterion",
   "frame-pointer",
@@ -55,8 +56,6 @@ flate2 = "1.0.25"
 
 [features]
 test = ["crdt-list", "rand", "arbitrary"]
-
-
 
 
 [[bench]]

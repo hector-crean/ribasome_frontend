@@ -4,8 +4,6 @@
 //!
 
 #![deny(unsafe_code)]
-
-pub mod annotation;
 pub mod rich_text;
 
 use std::{
@@ -24,6 +22,7 @@ use string_cache::DefaultAtom;
 mod small_set;
 #[cfg(feature = "test")]
 mod test_utils;
+
 // pub(crate) type InternalString = DefaultAtom;
 pub type InternalString = DefaultAtom;
 

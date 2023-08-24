@@ -1,8 +1,10 @@
 pub mod command;
 pub mod cursor;
 pub mod editor;
+pub mod formatting;
 pub mod highlighter;
 pub mod parser;
+pub mod text_buffer;
 pub mod viewer;
 
 use std::sync::Arc;
@@ -18,7 +20,7 @@ use bevy_egui::{
     },
     EguiContexts,
 };
-use rich_text::RichText as RichTextBufferInner;
+use peritext::RichText as RichTextBufferInner;
 
 use bevy::prelude::*;
 

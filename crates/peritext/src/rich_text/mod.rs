@@ -47,7 +47,7 @@ pub use event::Event;
 pub use rich_tree::query::IndexType;
 
 mod ann;
-mod cursor;
+pub mod cursor;
 mod delta;
 mod encoding;
 mod error;

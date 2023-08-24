@@ -1,17 +1,17 @@
-use crate::{Behavior, Expand, InternalString, RichText, Style};
 use chrono::{DateTime, NaiveDate, NaiveDateTime, Utc};
+use peritext::{Behavior, Expand, InternalString, RichText, Style};
 use serde_json::json;
 
-use super::Annotation;
+use super::Formattable;
 
-#[derive(Debug, serde::Serialize, serde::Deserialize)]
-enum Author {
+#[derive(Clone, Debug, serde::Serialize, serde::Deserialize, PartialEq, Eq)]
+pub enum Author {
     Individual(String), // "John Doe"
     Group(String),      // "The XYZ Group"
 }
 
-#[derive(Debug, serde::Serialize, serde::Deserialize)]
-struct JournalArticle {
+#[derive(Clone, Debug, serde::Serialize, serde::Deserialize, PartialEq, Eq)]
+pub struct JournalArticle {
     title: String,
     authors: Vec<Author>,
     journal_name: String,
@@ -21,8 +21,8 @@ struct JournalArticle {
     page_numbers: (u32, u32), // start and end pages
 }
 
-#[derive(Debug, serde::Serialize, serde::Deserialize)]
-enum Citation {
+#[derive(Clone, Debug, serde::Serialize, serde::Deserialize, PartialEq, Eq)]
+pub enum Citation {
     Apa(JournalArticle),
     Mla(JournalArticle),
     Chicago(JournalArticle),
@@ -69,7 +69,7 @@ impl Citation {
     }
 }
 
-impl Annotation for Citation {
+impl Formattable for Citation {
     fn tag(&self) -> &'static str {
         "citation"
     }
